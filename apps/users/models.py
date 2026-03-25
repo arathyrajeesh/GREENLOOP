@@ -39,6 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         on_delete=models.SET_NULL,
         related_name="users"
     )
+    address = models.TextField(blank=True, help_text="User's residential or business address")
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

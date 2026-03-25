@@ -31,6 +31,11 @@ class Pickup(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        if not self.qr_code:
+            import hashlib
+            hash_input = f"{self.id}{self.resident_id}{self.ward_id}{timezone.now().timestamp()}"
+            self.qr_code = hashlib.sha256(hash_input.encode()).hexdigest()
+            
         if self.status == 'completed' and not self.completed_at:
             self.completed_at = timezone.now()
         super().save(*args, **kwargs)
