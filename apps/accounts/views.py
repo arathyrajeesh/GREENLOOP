@@ -14,11 +14,12 @@ class OTPCodeViewSet(viewsets.ModelViewSet):
 
 class OTPRequestView(views.APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = 'otp_request'
 
     def post(self, request):
         email = request.data.get('email')
         if not email:
-            return response.Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQEST)
+            return response.Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
         
         # Get or create resident user
         user, created = User.objects.get_or_create(
@@ -50,14 +51,23 @@ class OTPVerifyView(views.APIView):
         
         try:
             user = User.objects.get(email=email)
-            otp = OTPCode.objects.filter(user=user, code=code, is_used=False).first()
+            otp = OTPCode.objects.filter(user=user, is_used=False).first()
             
-            if otp and otp.is_valid():
+            if not otp:
+                 return response.Response({"error": "No OTP found"}, status=status.HTTP_404_NOT_FOUND)
+
+            if not otp.is_valid():
+                 return response.Response({"error": "OTP expired or too many attempts"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if otp.code == code:
                 otp.is_used = True
                 otp.save()
                 
-                # Generate JWT tokens
+                # Generate JWT tokens with custom claims
                 refresh = RefreshToken.for_user(user)
+                refresh['role'] = user.role
+                refresh['ward_id'] = user.ward_id
+                
                 return response.Response({
                     "refresh": str(refresh),
                     "access": str(refresh.access_token),
@@ -65,11 +75,16 @@ class OTPVerifyView(views.APIView):
                         "id": str(user.id),
                         "email": user.email,
                         "name": user.name,
-                        "role": user.role
+                        "role": user.role,
+                        "ward_id": user.ward_id
                     }
                 }, status=status.HTTP_200_OK)
             else:
-                return response.Response({"error": "Invalid or expired OTP"}, status=status.HTTP_400_BAD_REQUEST)
+                otp.failed_attempts += 1
+                otp.save()
+                if otp.failed_attempts >= 5:
+                    return response.Response({"error": "Maximum attempts reached. OTP invalidated."}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+                return response.Response({"error": "Invalid OTP code"}, status=status.HTTP_400_BAD_REQUEST)
                 
         except User.DoesNotExist:
             return response.Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)

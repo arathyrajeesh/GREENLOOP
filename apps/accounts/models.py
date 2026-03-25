@@ -11,6 +11,7 @@ class OTPCode(models.Model):
     )
     code = models.CharField(max_length=6)
     is_used = models.BooleanField(default=False)
+    failed_attempts = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
 
@@ -24,11 +25,11 @@ class OTPCode(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = timezone.now() + timedelta(minutes=10)
+            self.expires_at = timezone.now() + timedelta(minutes=5)
         super().save(*args, **kwargs)
 
     def is_valid(self):
-        return not self.is_used and timezone.now() < self.expires_at
+        return not self.is_used and timezone.now() < self.expires_at and self.failed_attempts < 5
 
     def __str__(self):
         return f"OTP for {self.user.email}"
