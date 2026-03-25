@@ -15,6 +15,13 @@ class FeeCollection(models.Model):
         related_name="fee_collections",
         limit_choices_to={'role': 'RESIDENT'}
     )
+    ward = models.ForeignKey(
+        "wards.Ward",
+        on_delete=models.CASCADE,
+        related_name="fee_collections",
+        null=True,
+        blank=True
+    )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default="CASH")
     receipt_number = models.CharField(max_length=25, unique=True, db_index=True)
