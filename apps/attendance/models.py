@@ -1,4 +1,4 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.utils.translation import gettext_lazy as _
 
 class AttendanceLog(models.Model):
@@ -17,6 +17,14 @@ class AttendanceLog(models.Model):
     date = models.DateField()
     check_in = models.TimeField(null=True, blank=True)
     check_out = models.TimeField(null=True, blank=True)
+    check_in_location = models.PointField(null=True, blank=True, help_text="GPS location at check-in")
+    
+    # PPE Checklist
+    has_gloves = models.BooleanField(default=False)
+    has_mask = models.BooleanField(default=False)
+    has_vest = models.BooleanField(default=False)
+    has_boots = models.BooleanField(default=False)
+    
     ppe_selfie = models.ImageField(upload_to="attendance/ppe/", null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PRESENT")
     created_at = models.DateTimeField(auto_now_add=True)
