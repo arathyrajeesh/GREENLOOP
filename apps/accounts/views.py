@@ -52,7 +52,7 @@ class OTPRequestView(views.APIView):
                 message, 
                 from_email, 
                 [email],
-                fail_silently=False  # Keep False for now to catch the exact error in logs
+                fail_silently=True  # Keep False for now to catch the exact error in logs
             )
         except Exception as e:
             # Important: Don't let email failure crash the 200 response
