@@ -27,6 +27,14 @@ class Complaint(models.Model):
     description = models.TextField()
     location = models.PointField(null=True, blank=True, help_text="GPS location of the complaint")
     image = models.ImageField(upload_to="complaints/", null=True, blank=True)
+    assigned_to = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_complaints",
+        limit_choices_to={'role__in': ['ADMIN', 'HKS_WORKER']}
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
     resolved_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

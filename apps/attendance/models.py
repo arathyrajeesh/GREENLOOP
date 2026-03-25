@@ -17,6 +17,7 @@ class AttendanceLog(models.Model):
     date = models.DateField()
     check_in = models.TimeField(null=True, blank=True)
     check_out = models.TimeField(null=True, blank=True)
+    ppe_selfie = models.ImageField(upload_to="attendance/ppe/", null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PRESENT")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

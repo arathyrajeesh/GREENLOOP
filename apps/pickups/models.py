@@ -25,6 +25,7 @@ class Pickup(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     scheduled_date = models.DateField(default=timezone.now)
     qr_code = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Estimated weight of waste collected")
     completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
