@@ -25,7 +25,8 @@ class OTPRequestView(views.APIView):
 
     @extend_schema(
         request=OTPRequestSerializer, 
-        responses={200: BaseResponseSerializer}
+        responses={200: BaseResponseSerializer},
+        component_name="OTPRequest"
     )
     def post(self, request):
         email = request.data.get('email')

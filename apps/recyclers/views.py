@@ -17,7 +17,13 @@ class RecyclingCertificateViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return RecyclingCertificate.objects.none()
+            
         user = self.request.user
+        if not user or user.is_anonymous:
+            return RecyclingCertificate.objects.none()
+            
         if user.role == 'RESIDENT':
             return RecyclingCertificate.objects.filter(resident=user)
         elif user.role == 'RECYCLER':
