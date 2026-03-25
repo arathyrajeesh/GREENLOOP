@@ -45,11 +45,19 @@ class OTPRequestView(views.APIView):
         # Send actual SMTP email
         subject = "GreenLoop Login OTP"
         message = f"Your GreenLoop login OTP is {otp_code}. It is valid for 5 minutes."
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@greenloop.com')
         try:
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+            send_mail(
+                subject, 
+                message, 
+                from_email, 
+                [email],
+                fail_silently=False  # Keep False for now to catch the exact error in logs
+            )
         except Exception as e:
-            # Fallback to console if SMTP fails in dev environment
-            print(f"SMTP ERROR: {e}")
+            # Important: Don't let email failure crash the 200 response
+            print(f"SMTP ERROR for {email}: {str(e)}")
+            # In production, we should use fail_silently=True or a background task
         
         return response.Response({
             "message": "OTP sent successfully",
