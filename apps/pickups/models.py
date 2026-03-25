@@ -41,3 +41,22 @@ class Pickup(models.Model):
 
     def __str__(self):
         return f"Pickup {self.id} ({self.status})"
+
+class PickupVerification(models.Model):
+    pickup = models.OneToOneField(Pickup, on_delete=models.CASCADE, related_name="verification")
+    verified_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="verified_pickups",
+        limit_choices_to={'role': 'HKS_WORKER'}
+    )
+    verified_at = models.DateTimeField(auto_now_add=True)
+    verification_image = models.ImageField(upload_to="pickups/verifications/", null=True, blank=True)
+    comments = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Pickup Verification"
+        verbose_name_plural = "Pickup Verifications"
+
+    def __str__(self):
+        return f"Verification for Pickup {self.pickup.id}"
