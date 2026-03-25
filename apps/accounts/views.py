@@ -33,10 +33,18 @@ class OTPRequestView(views.APIView):
             return response.Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
         
         # Get or create resident user
-        user, created = User.objects.get_or_create(
-            email=email, 
-            defaults={'name': email.split('@')[0], 'role': 'RESIDENT'}
-        )
+        user = User.objects.filter(email=email).first()
+
+        if not user:
+            user = User.objects.create_user(
+                email=email,
+                password=None,
+                name=email.split('@')[0],
+                role='RESIDENT'
+            )
+            created = True
+        else:
+            created = False
         
         # Generate 6-digit OTP
         otp_code = ''.join(random.choices(string.digits, k=6))
