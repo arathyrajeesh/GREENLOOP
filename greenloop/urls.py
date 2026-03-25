@@ -6,10 +6,26 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from rest_framework import routers
+
+# ViewSets
+from apps.users.views import UserViewSet
+from apps.wards.views import WardViewSet
+from apps.pickups.views import PickupViewSet
+from apps.routes.views import RouteViewSet
+
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'wards', WardViewSet)
+router.register(r'pickups', PickupViewSet)
+router.register(r'routes', RouteViewSet)
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/api/docs/', permanent=False)),
     path('admin/', admin.site.urls),
+
+    # API v1
+    path('api/v1/', include(router.urls)),
 
     # OpenAPI Schema & Docs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
