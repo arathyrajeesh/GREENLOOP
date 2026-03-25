@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     binutils \
     libproj-dev \
+    libgdal-dev \
+    libgeos-dev \
     gdal-bin \
     netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
