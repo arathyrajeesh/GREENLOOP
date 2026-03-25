@@ -12,6 +12,10 @@ db_from_env = dj_database_url.config(conn_max_age=600)
 if db_from_env:
     db_from_env["ENGINE"] = "django.contrib.gis.db.backends.postgis"
     DATABASES = {"default": db_from_env}
+else:
+    # On Render, if DATABASE_URL is missing, we still want to use Postgres
+    # (SQLite fallback is bad for production migration/collectstatic runs)
+    DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 
 # Celery - read from environment
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")

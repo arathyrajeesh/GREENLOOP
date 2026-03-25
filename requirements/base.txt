@@ -8,3 +8,4 @@ redis
 drf-yasg
 gunicorn
 dj-database-url
+whitenoise
