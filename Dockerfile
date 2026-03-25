@@ -25,5 +25,5 @@ RUN chmod +x /app/entrypoint.sh
 # Run entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-# 🔥 START SERVER (IMPORTANT)
-CMD ["sh", "-c", "gunicorn greenloop.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"]
+# 🔥 START SERVER (ASGI)
+CMD ["sh", "-c", "gunicorn greenloop.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000}"]
