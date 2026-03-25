@@ -43,8 +43,14 @@ router.register(r'sync-queue', SyncQueueViewSet)
 router.register(r'report-categories', ReportCategoryViewSet)
 router.register(r'reports', ReportViewSet, basename='report')
 
+from django.http import JsonResponse
+
+def health_check(request):
+    return JsonResponse({"status": "healthy", "service": "greenloop-backend"})
+
 urlpatterns = [
-    path('', RedirectView.as_view(url='/api/docs/', permanent=False)),
+    path('', RedirectView.as_view(pattern_name='swagger-ui', permanent=False)),
+    path('health/', health_check, name='health-check'),
     path('admin/', admin.site.urls),
 
     # API v1
