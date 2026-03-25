@@ -1,31 +1,44 @@
 #!/bin/bash
 set -e
 
-# Only wait for DB if running inside Docker Compose (db hostname is set)
+# Detect environment
 DB_HOST="${DB_HOST:-db}"
+DB_PORT="${DB_PORT:-5432}"
 
-python << END
+# Skip wait if on Render or using an external DATABASE_URL (not pointing to 'db')
+SKIP_WAIT=false
+if [ -n "$RENDER" ]; then
+    SKIP_WAIT=true
+elif [ -n "$DATABASE_URL" ] && [[ "$DATABASE_URL" != *"@db"* ]] && [[ "$DATABASE_URL" != *"@localhost"* ]]; then
+    SKIP_WAIT=true
+fi
+
+if [ "$SKIP_WAIT" = "true" ]; then
+    echo "Skipping DB wait (external database or Render environment detected)."
+else
+    echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT ..."
+    python << END
 import socket, os, time
+db_host = "$DB_HOST"
+db_port = int("$DB_PORT")
 
-db_host = os.getenv("DB_HOST", "db")
-db_port = int(os.getenv("DB_PORT", 5432))
-
-# Try once — if host not resolvable, skip (e.g. Render managed DB)
-for i in range(10):
+for i in range(15):
     try:
         sock = socket.create_connection((db_host, db_port), timeout=2)
         sock.close()
         print(f"PostgreSQL at {db_host}:{db_port} is ready!")
-        break
+        exit(0)
     except (socket.error, OSError):
-        if i == 0:
-            print(f"Cannot reach {db_host}:{db_port}, retrying...")
         time.sleep(1)
-else:
-    print("DB not reachable via hostname — skipping wait (likely using DATABASE_URL on Render).")
+print(f"PostgreSQL at {db_host}:{db_port} not reachable, proceeding anyway...")
 END
+fi
 
-python manage.py migrate --noinput || true
-python manage.py collectstatic --noinput || true
+# Run migrations and collectstatic
+echo "Running migrations..."
+python manage.py migrate --noinput || echo "Migration failed, but proceeding..."
+
+echo "Collecting static files..."
+python manage.py collectstatic --noinput || echo "Collectstatic failed, but proceeding..."
 
 exec "$@"
