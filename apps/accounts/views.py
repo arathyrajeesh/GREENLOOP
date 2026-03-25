@@ -1,6 +1,6 @@
 import random
 import string
-from rest_framework import viewsets, permissions, views, status, response
+from rest_framework import viewsets, permissions, views, status, response, serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from apps.users.models import User
