@@ -4,6 +4,7 @@ from rest_framework import viewsets, permissions, views, status, response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from apps.users.models import User
+from django.core.mail import send_mail
 from .models import OTPCode
 from .serializers import OTPCodeSerializer
 
@@ -31,8 +32,14 @@ class OTPRequestView(views.APIView):
         otp_code = ''.join(random.choices(string.digits, k=6))
         OTPCode.objects.create(user=user, code=otp_code)
         
-        # Placeholder for sending email
-        # print(f"DEBUG: Sending OTP {otp_code} to {email}")
+        # Send actual SMTP email
+        subject = "GreenLoop Login OTP"
+        message = f"Your GreenLoop login OTP is {otp_code}. It is valid for 5 minutes."
+        try:
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
+        except Exception as e:
+            # Fallback to console if SMTP fails in dev environment
+            print(f"SMTP ERROR: {e}")
         
         return response.Response({
             "message": "OTP sent successfully",
