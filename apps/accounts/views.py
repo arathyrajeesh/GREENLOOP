@@ -5,8 +5,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from apps.users.models import User
 from django.core.mail import send_mail
+from drf_spectacular.utils import extend_schema
 from .models import OTPCode
-from .serializers import OTPCodeSerializer
+from .serializers import OTPCodeSerializer, OTPRequestSerializer, OTPVerifySerializer
 
 class OTPCodeViewSet(viewsets.ModelViewSet):
     queryset = OTPCode.objects.all()
@@ -17,6 +18,7 @@ class OTPRequestView(views.APIView):
     permission_classes = [permissions.AllowAny]
     throttle_scope = 'otp_request'
 
+    @extend_schema(request=OTPRequestSerializer, responses={200: serializers.Serializer})
     def post(self, request):
         email = request.data.get('email')
         if not email:
@@ -49,6 +51,7 @@ class OTPRequestView(views.APIView):
 class OTPVerifyView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(request=OTPVerifySerializer, responses={200: serializers.Serializer})
     def post(self, request):
         email = request.data.get('email')
         code = request.data.get('code')
