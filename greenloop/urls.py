@@ -11,14 +11,37 @@ from rest_framework import routers
 # ViewSets
 from apps.users.views import UserViewSet
 from apps.wards.views import WardViewSet
-from apps.pickups.views import PickupViewSet
+from apps.pickups.views import PickupViewSet, PickupVerificationViewSet
 from apps.routes.views import RouteViewSet
+from apps.attendance.views import AttendanceLogViewSet
+from apps.complaints.views import ComplaintViewSet
+from apps.rewards.views import RewardViewSet, RewardRedemptionViewSet
+from apps.payments.views import FeeCollectionViewSet
+from apps.recyclers.views import MaterialTypeViewSet, RecyclerPurchaseViewSet, RecyclingCertificateViewSet
+from apps.notifications.views import NotificationViewSet
+from apps.accounts.views import OTPCodeViewSet
+from apps.dashboard.views import SyncQueueViewSet
+from apps.reports.views import ReportCategoryViewSet, ReportViewSet
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'wards', WardViewSet)
 router.register(r'pickups', PickupViewSet)
+router.register(r'pickup-verifications', PickupVerificationViewSet)
 router.register(r'routes', RouteViewSet)
+router.register(r'attendance', AttendanceLogViewSet)
+router.register(r'complaints', ComplaintViewSet, basename='complaint')
+router.register(r'rewards', RewardViewSet, basename='reward')
+router.register(r'reward-redemptions', RewardRedemptionViewSet, basename='reward-redemption')
+router.register(r'payments', FeeCollectionViewSet, basename='payment')
+router.register(r'material-types', MaterialTypeViewSet)
+router.register(r'recycler-purchases', RecyclerPurchaseViewSet)
+router.register(r'recycling-certificates', RecyclingCertificateViewSet, basename='recycling-certificate')
+router.register(r'notifications', NotificationViewSet, basename='notification')
+router.register(r'otp-codes', OTPCodeViewSet)
+router.register(r'sync-queue', SyncQueueViewSet)
+router.register(r'report-categories', ReportCategoryViewSet)
+router.register(r'reports', ReportViewSet, basename='report')
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/api/docs/', permanent=False)),

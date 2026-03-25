@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from rest_framework import viewsets, permissions
+from .models import AttendanceLog
+from .serializers import AttendanceLogSerializer
 
-# Create your views here.
+class AttendanceLogViewSet(viewsets.ModelViewSet):
+    queryset = AttendanceLog.objects.all()
+    serializer_class = AttendanceLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
