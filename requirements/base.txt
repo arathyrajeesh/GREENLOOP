@@ -5,7 +5,10 @@ djangorestframework
 psycopg2-binary
 celery
 redis
-drf-yasg
+django-filter
+django-cors-headers
+drf-spectacular
+djangorestframework-simplejwt
 gunicorn
 dj-database-url
 whitenoise
