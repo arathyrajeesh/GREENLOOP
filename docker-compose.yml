@@ -1,0 +1,85 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: greenloop_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: greenloop_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: greenloop_redis
+    ports:
+      - "6379:6379"
+
+  django:
+    build: .
+    container_name: greenloop_django
+    command: gunicorn --reload greenloop.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=greenloop.settings.development
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DATABASE_URL=postgis://postgres:password@db:5432/greenloop_dev
+    depends_on:
+      - db
+      - redis
+
+  daphne:
+    build: .
+    container_name: greenloop_daphne
+    command: daphne -b 0.0.0.0 -p 8001 greenloop.asgi:application
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8001"
+    environment:
+      - DJANGO_SETTINGS_MODULE=greenloop.settings.development
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DATABASE_URL=postgis://postgres:password@db:5432/greenloop_dev
+    depends_on:
+      - db
+      - redis
+
+  celery_worker:
+    build: .
+    container_name: greenloop_celery_worker
+    command: celery -A greenloop worker -l info
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=greenloop.settings.development
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DATABASE_URL=postgis://postgres:password@db:5432/greenloop_dev
+    depends_on:
+      - db
+      - redis
+      - django
+
+  celery_beat:
+    build: .
+    container_name: greenloop_celery_beat
+    command: celery -A greenloop beat -l info
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=greenloop.settings.development
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DATABASE_URL=postgis://postgres:password@db:5432/greenloop_dev
+    depends_on:
+      - db
+      - redis
+      - celery_worker
+
+volumes:
+  postgres_data:

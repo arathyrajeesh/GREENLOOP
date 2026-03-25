@@ -20,6 +20,8 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "channels",
+    "drf_yasg",
+    "django.contrib.gis",
 
     # Local apps
     "apps.accounts",
@@ -103,3 +105,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
