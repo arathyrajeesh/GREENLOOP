@@ -24,6 +24,32 @@ class Pickup(models.Model):
     waste_type = models.CharField(max_length=20, choices=WASTE_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     scheduled_date = models.DateField(default=timezone.now)
+    time_slot = models.CharField(max_length=50, blank=True, null=True, help_text="e.g., '10:00-12:00'")
+
+    @property
+    def scheduled_datetime(self):
+        """
+        Attempts to parse the start time from `time_slot` (e.g. '10:00-12:00' -> 10:00) 
+        and combine it with `scheduled_date`. If it fails or is missing, defaults to 00:00 of that date.
+        """
+        from datetime import datetime
+        import re
+        
+        start_time = "00:00"
+        if self.time_slot:
+            # Look for HR:MIN pattern
+            match = re.search(r'(\d{1,2}:\d{2})', self.time_slot)
+            if match:
+                start_time = match.group(1)
+                
+        time_format = "%H:%M"
+        try:
+            parsed_time = datetime.strptime(start_time, time_format).time()
+        except ValueError:
+            parsed_time = datetime.min.time()
+            
+        dt_naive = datetime.combine(self.scheduled_date, parsed_time)
+        return timezone.make_aware(dt_naive)
     qr_code = models.CharField(max_length=64, unique=True, blank=True, null=True)
     weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Estimated weight of waste collected")
     completed_at = models.DateTimeField(null=True, blank=True)

@@ -8,7 +8,10 @@ class PickupSerializer(GeoFeatureModelSerializer):
         id_field = "id"
         fields = [
             'id', 'resident', 'ward', 'waste_type', 
-            'status', 'scheduled_date', 'qr_code', 
+            'status', 'scheduled_date', 'time_slot', 'qr_code', 
             'completed_at', 'created_at'
         ]
-        read_only_fields = ['qr_code', 'completed_at', 'created_at']
+        read_only_fields = ['resident', 'status', 'qr_code', 'completed_at', 'created_at']
+        extra_kwargs = {
+            'ward': {'required': False}
+        }
