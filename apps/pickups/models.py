@@ -25,6 +25,7 @@ class Pickup(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     scheduled_date = models.DateField(default=timezone.now)
     time_slot = models.CharField(max_length=50, blank=True, null=True, help_text="e.g., '10:00-12:00'")
+    notes = models.TextField(blank=True, help_text="Mandatory note if GPS override was used")
 
     @property
     def scheduled_datetime(self):
@@ -84,6 +85,12 @@ class PickupVerification(models.Model):
     )
     verified_at = models.DateTimeField(auto_now_add=True)
     verification_image = models.ImageField(upload_to="pickups/verifications/", null=True, blank=True)
+    waste_photo_url = models.URLField(max_length=500, null=True, blank=True)
+    ai_classification = models.CharField(max_length=50, blank=True)
+    contamination_confidence = models.FloatField(null=True, blank=True)
+    requires_admin_review = models.BooleanField(default=False)
+    distance_meters = models.FloatField(null=True, blank=True)
+    is_gps_override = models.BooleanField(default=False)
     comments = models.TextField(blank=True)
 
     class Meta:

@@ -4,9 +4,10 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from django.utils import timezone
 from datetime import timedelta
+from unittest.mock import patch
 from apps.users.models import User
 from apps.wards.models import Ward
-from apps.pickups.models import Pickup
+from apps.pickups.models import Pickup, PickupVerification
 
 class PickupAPITestCase(TestCase):
     def setUp(self):
@@ -134,3 +135,88 @@ class PickupAPITestCase(TestCase):
         self.p1.refresh_from_db()
         self.assertEqual(self.p1.status, 'completed')
         self.assertIsNotNone(self.p1.completed_at)
+
+    def test_verify_scan_success(self):
+        """Worker verifies QR securely within 100m."""
+        self.client.force_authenticate(user=self.worker)
+        # 1 degree is roughly 111km, so 0.0005 is roughly 55.5m (within 100m limit)
+        url = reverse('pickup-verify-scan', kwargs={'pk': self.p1.id})
+        data = {
+            "qr_scan_data": self.p1.qr_code,
+            "worker_location": {
+                "type": "Point",
+                "coordinates": [0.5005, 0.5]
+            }
+        }
+        res = self.client.post(url, data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertTrue(res.data['valid'])
+        self.assertTrue(res.data['distance_meters'] < 100)
+
+    def test_verify_scan_gps_failure(self):
+        """Worker verifies QR but is over 100m away, forcing a manual override flag."""
+        self.client.force_authenticate(user=self.worker)
+        # 0.002 degrees is roughly 222m (beyond 100m limit)
+        url = reverse('pickup-verify-scan', kwargs={'pk': self.p1.id})
+        data = {
+            "qr_scan_data": self.p1.qr_code,
+            "worker_location": {
+                "type": "Point",
+                "coordinates": [0.502, 0.5]
+            }
+        }
+        res = self.client.post(url, data, format='json')
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(res.data['valid'])
+        self.assertTrue(res.data['requires_override'])
+        self.assertTrue(res.data['distance_meters'] > 100)
+
+    @patch('apps.rewards.tasks.award_greenleaf_points.delay')
+    @patch('apps.notifications.tasks.notify_resident_pickup_complete.delay')
+    @patch('apps.pickups.tasks.flag_pickup_for_review.delay')
+    def test_complete_clean_pickup(self, mock_flag, mock_notify, mock_award):
+        """Standard valid completion logic ensuring reward assignments occur."""
+        self.client.force_authenticate(user=self.worker)
+        url = reverse('pickup-complete', kwargs={'pk': self.p1.id})
+        data = {
+            "waste_photo_url": "https://s3.local/img1.jpg",
+            "ai_classification": "clean",
+            "contamination_confidence": 0.95,
+            "weight_kg": 5.5,
+            "is_gps_override": False
+        }
+        res = self.client.patch(url, data, format='json')
+        self.p1.refresh_from_db()
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.p1.status, 'completed')
+        self.assertEqual(self.p1.verification.ai_classification, "clean")
+        
+        # Verify async hooks executed
+        mock_award.assert_called_once_with(self.p1.id)
+        mock_notify.assert_called_once_with(self.p1.id)
+        mock_flag.assert_not_called()
+
+    @patch('apps.rewards.tasks.award_greenleaf_points.delay')
+    @patch('apps.notifications.tasks.notify_resident_pickup_complete.delay')
+    @patch('apps.pickups.tasks.flag_pickup_for_review.delay')
+    def test_complete_contaminated_pickup(self, mock_flag, mock_notify, mock_award):
+        """Worker forces a contaminated flag triggering an Admin Review trace."""
+        self.client.force_authenticate(user=self.worker)
+        url = reverse('pickup-complete', kwargs={'pk': self.p1.id})
+        data = {
+            "waste_photo_url": "https://s3.local/img2.jpg",
+            "ai_classification": "contaminated",
+            "contamination_confidence": 0.40,  # Below 0.70 limit
+            "is_gps_override": True,
+            "notes": "GPS jumped, forced completion with mixed waste."
+        }
+        res = self.client.patch(url, data, format='json')
+        self.p1.refresh_from_db()
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.p1.notes, "GPS jumped, forced completion with mixed waste.")
+        self.assertTrue(self.p1.verification.requires_admin_review)
+        
+        mock_award.assert_called_once_with(self.p1.id)
+        mock_flag.assert_called_once_with(self.p1.id)
