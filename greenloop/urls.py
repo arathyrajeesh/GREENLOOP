@@ -12,8 +12,8 @@ from rest_framework import routers
 from apps.users.views import UserViewSet
 from apps.wards.views import WardViewSet
 from apps.pickups.views import PickupViewSet, PickupVerificationViewSet
-from apps.routes.views import RouteViewSet
-from apps.attendance.views import AttendanceLogViewSet
+from apps.routes.views import RouteViewSet, TodayRouteView
+from apps.attendance.views import AttendanceLogViewSet, WorkerAttendanceView
 from apps.complaints.views import ComplaintViewSet
 from apps.rewards.views import RewardViewSet, RewardRedemptionViewSet
 from apps.payments.views import FeeCollectionViewSet
@@ -54,6 +54,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API v1
+    path('api/v1/health/', health_check, name='api-health-check'),
+    
+    # Custom HKS API Endpoints
+    path('api/v1/hks/routes/today/', TodayRouteView.as_view(), name='hks-route-today'),
+    path('api/v1/hks/attendance/', WorkerAttendanceView.as_view(), name='hks-attendance'),
     path('api/v1/', include(router.urls)),
 
     # OpenAPI Schema & Docs

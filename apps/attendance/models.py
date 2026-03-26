@@ -26,6 +26,7 @@ class AttendanceLog(models.Model):
     has_boots = models.BooleanField(default=False)
     
     ppe_selfie = models.ImageField(upload_to="attendance/ppe/", null=True, blank=True)
+    ppe_photo_url = models.URLField(max_length=500, null=True, blank=True, help_text="Verifiable remote URL for PPE selfie")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PRESENT")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
