@@ -7,6 +7,7 @@ from apps.users.models import User
 from django.core.mail import send_mail
 from drf_spectacular.utils import extend_schema
 from .models import OTPCode
+from django.core.management import call_command
 from .serializers import (
     OTPCodeSerializer, 
     OTPRequestSerializer, 
@@ -35,6 +36,26 @@ class PingView(views.APIView):
                 "user_count": user_count,
                 "otp_count": otp_count,
                 "environment": "production" if not settings.DEBUG else "development"
+            })
+        except Exception as e:
+            return response.Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class MigrateView(views.APIView):
+    """
+    Emergency view to trigger migrations manually if entrypoint.sh is bypassed.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        try:
+            # Trigger migrate command
+            call_command('migrate', interactive=False)
+            return response.Response({
+                "status": "success",
+                "message": "Migrations applied successfully."
             })
         except Exception as e:
             return response.Response({
