@@ -85,7 +85,10 @@ class HKSEndpointsTestCase(TestCase):
         data = {
             "check_in_location": {"type": "Point", "coordinates": [5.0, 5.0]}, # Inside (0,0) to (10,10)
             "ppe_photo_url": "https://example.com/photo.jpg",
-            "has_vest": True
+            "has_vest": True,
+            "has_mask": True,
+            "has_gloves": True,
+            "has_boots": True,
         }
         
         response = self.client.post(self.attendance_url, data, format='json')
@@ -101,6 +104,11 @@ class HKSEndpointsTestCase(TestCase):
         self.client.force_authenticate(user=self.worker2)
         data = {
             "check_in_location": {"type": "Point", "coordinates": [11.0, 11.0]}, # Outside (0,0) to (10,10)
+            "ppe_photo_url": "https://example.com/photo.jpg",
+            "has_vest": True,
+            "has_mask": True,
+            "has_gloves": True,
+            "has_boots": True,
         }
         
         response = self.client.post(self.attendance_url, data, format='json')
@@ -109,3 +117,71 @@ class HKSEndpointsTestCase(TestCase):
         
         # Ensure no log created
         self.assertFalse(AttendanceLog.objects.filter(worker=self.worker2).exists())
+
+    def test_attendance_missing_ppe(self):
+        """Test attendance rejected if PPE checklist is incomplete"""
+        self.client.force_authenticate(user=self.worker)
+        data = {
+            "check_in_location": {"type": "Point", "coordinates": [5.0, 5.0]},
+            "ppe_photo_url": "https://example.com/photo.jpg",
+            "has_vest": True,
+            "has_mask": True,
+            "has_gloves": False, # Missing gloves
+            "has_boots": True,
+        }
+        response = self.client.post(self.attendance_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], "All PPE items must be confirmed for check-in")
+
+    def test_attendance_checkout(self):
+        """Test worker checkout mutation securely closes the day log"""
+        today = timezone.now().date()
+        AttendanceLog.objects.create(
+            worker=self.worker,
+            date=today,
+            check_in=timezone.now().time(),
+            check_in_location=Point(5.0, 5.0)
+        )
+        self.client.force_authenticate(user=self.worker)
+        response = self.client.patch(self.attendance_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log = AttendanceLog.objects.get(worker=self.worker, date=today)
+        self.assertIsNotNone(log.check_out)
+
+    def test_attendance_history(self):
+        """Test fetching monthly attendance calendar works with date filters"""
+        now = timezone.now()
+        AttendanceLog.objects.create(
+            worker=self.worker,
+            date=now.date(),
+            check_in=now.time(),
+            check_in_location=Point(5.0, 5.0)
+        )
+        
+        # Log for previous month
+        prev_month = now - timezone.timedelta(days=32)
+        AttendanceLog.objects.create(
+            worker=self.worker,
+            date=prev_month.date(),
+            check_in=prev_month.time(),
+            check_in_location=Point(5.0, 5.0)
+        )
+        
+        self.client.force_authenticate(user=self.worker)
+        
+        # Test default (current month)
+        response = self.client.get(self.attendance_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Should only return current month log
+        features_default = response.data.get('features', [])
+        self.assertEqual(len(features_default), 1)
+        self.assertEqual(features_default[0]['properties']['date'], str(now.date()))
+        
+        # Test specific month
+        month_str = f"{prev_month.year}-{prev_month.month:02d}"
+        response_prev = self.client.get(f"{self.attendance_url}?month={month_str}")
+        self.assertEqual(response_prev.status_code, status.HTTP_200_OK)
+        features_prev = response_prev.data.get('features', [])
+        self.assertEqual(len(features_prev), 1)
+        self.assertEqual(features_prev[0]['properties']['date'], str(prev_month.date()))
