@@ -1,4 +1,8 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.utils import timezone
+from django.db.models import Sum, Count
 from .models import FeeCollection
 from .serializers import FeeCollectionSerializer
 
@@ -17,3 +21,32 @@ class FeeCollectionViewSet(viewsets.ModelViewSet):
         if user.role == 'RESIDENT':
             return FeeCollection.objects.filter(resident=user)
         return FeeCollection.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(collected_by=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """
+        Daily summary of fee collections for the authenticated worker.
+        """
+        user = request.user
+        if getattr(user, 'role', '') != 'HKS_WORKER':
+            return Response({"error": "Only HKS Workers can access this summary"}, status=status.HTTP_403_FORBIDDEN)
+            
+        today = timezone.now().date()
+        collections = FeeCollection.objects.filter(collected_by=user, payment_date__date=today)
+        
+        total_collected = collections.aggregate(total=Sum('amount'))['total'] or 0
+        household_count = collections.values('resident').distinct().count()
+        
+        # Payment mode breakdown
+        modes = collections.values('payment_method').annotate(count=Count('id'), total=Sum('amount'))
+        mode_breakdown = {m['payment_method']: {"count": m['count'], "total": m['total']} for m in modes}
+        
+        return Response({
+            "date": str(today),
+            "total_collected": total_collected,
+            "household_count": household_count,
+            "payment_mode_breakdown": mode_breakdown
+        }, status=status.HTTP_200_OK)

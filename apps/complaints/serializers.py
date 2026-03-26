@@ -7,3 +7,4 @@ class ComplaintSerializer(GeoFeatureModelSerializer):
         geo_field = "location"
         id_field = "id"
         fields = '__all__'
+        read_only_fields = ['id', 'reporter', 'status', 'created_at', 'updated_at', 'resolved_at']

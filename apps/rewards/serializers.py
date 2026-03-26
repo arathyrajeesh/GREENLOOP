@@ -10,3 +10,4 @@ class RewardRedemptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = RewardRedemption
         fields = '__all__'
+        read_only_fields = ['id', 'resident', 'status', 'created_at', 'updated_at']

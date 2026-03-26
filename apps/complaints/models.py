@@ -14,14 +14,17 @@ class Complaint(models.Model):
         ("CLEANLINESS", "Lack of Cleanliness"),
         ("BEHAVIOR", "Staff Behavior"),
         ("PAYMENT", "Payment Issue"),
+        ("OVERFLOW", "Overflowing Bins"),
+        ("BLOCKED", "Access Blocked"),
+        ("UNAVAILABLE", "Resident Unavailable"),
         ("OTHER", "Other"),
     )
 
-    resident = models.ForeignKey(
+    reporter = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
-        related_name="complaints",
-        limit_choices_to={'role': 'RESIDENT'}
+        related_name="reported_complaints",
+        limit_choices_to={'role__in': ['RESIDENT', 'HKS_WORKER']}
     )
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     description = models.TextField()
@@ -42,7 +45,7 @@ class Complaint(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['resident'], name='complaint_resident_idx'),
+            models.Index(fields=['reporter'], name='complaint_reporter_idx'),
             models.Index(fields=['status'], name='complaint_status_idx'),
         ]
         verbose_name = _("Complaint")
@@ -50,4 +53,4 @@ class Complaint(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Complaint {self.id} - {self.resident.name} ({self.status})"
+        return f"Complaint {self.id} - {self.reporter.name} ({self.status})"

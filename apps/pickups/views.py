@@ -167,7 +167,16 @@ class PickupViewSet(viewsets.ModelViewSet):
         if requires_admin_review:
             flag_pickup_for_review.delay(pickup.id)
             
-        return Response({"status": "completed"})
+        # Check weight threshold for payment requirement
+        payment_required = False
+        if weight_kg and float(weight_kg) > 50:
+            payment_required = True
+            
+        return Response({
+            "status": "completed", 
+            "payment_required": payment_required,
+            "message": "Fee collection required for weight > 50kg" if payment_required else "Pickup completed"
+        })
 
 class PickupVerificationViewSet(viewsets.ModelViewSet):
     queryset = PickupVerification.objects.all()

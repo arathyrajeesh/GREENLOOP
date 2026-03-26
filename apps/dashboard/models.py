@@ -8,6 +8,21 @@ class SyncQueue(models.Model):
         ("DELETE", "Delete"),
     )
 
+    STATUS_CHOICES = (
+        ("PENDING", "Pending"),
+        ("SYNCED", "Synced"),
+        ("ERROR", "Error"),
+    )
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="sync_items",
+        null=True, blank=True
+    )
+    device_id = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="PENDING")
+
     model_name = models.CharField(max_length=100)
     object_id = models.CharField(max_length=100)
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
