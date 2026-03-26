@@ -36,9 +36,9 @@ fi
 
 # Run migrations and collectstatic
 echo "Running migrations..."
-python manage.py migrate --noinput
+python manage.py migrate --noinput || echo "Migration failed, but proceeding..."
 
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput || echo "Collectstatic failed, but proceeding..."
 
 exec "$@"

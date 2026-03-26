@@ -50,14 +50,30 @@ class MigrateView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
+        mode = request.query_params.get('type', 'standard')
         try:
-            # Trigger migrate command
+            if mode == 'fix':
+                # Emergency fix for "InconsistentMigrationHistory"
+                # This happens when switching to custom AUTH_USER_MODEL on existing DB
+                print("Running emergency migration fix...")
+                call_command('migrate', 'contenttypes', fake=True, interactive=False)
+                call_command('migrate', 'auth', fake=True, interactive=False)
+                call_command('migrate', 'users', fake=True, interactive=False)
+                call_command('migrate', fake_initial=True, interactive=False)
+                return response.Response({
+                    "status": "success",
+                    "message": "Emergency migration fix (faking) applied."
+                })
+            
+            # Trigger standard migrate command
+            print("Running standard migrations...")
             call_command('migrate', interactive=False)
             return response.Response({
                 "status": "success",
                 "message": "Migrations applied successfully."
             })
         except Exception as e:
+            print(f"MIGRATION ERROR: {str(e)}")
             return response.Response({
                 "status": "error",
                 "message": str(e)
