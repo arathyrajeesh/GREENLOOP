@@ -55,15 +55,24 @@ class MigrateView(views.APIView):
         try:
             if mode == 'fix_hard':
                 # Aggressive fix: manually clear migration history for problematic apps
-                print("Running aggressive migration fix (raw SQL)...")
+                print("Running aggressive migration fix (raw SQL) with explicit commit...")
                 with connection.cursor() as cursor:
-                    cursor.execute("DELETE FROM django_migrations WHERE app IN ('admin', 'auth', 'sessions', 'contenttypes');")
+                    # We must clear all apps that depend on User OR were applied before User was custom
+                    apps_to_clear = ['admin', 'auth', 'sessions', 'contenttypes', 'users']
+                    for app in apps_to_clear:
+                        print(f"Clearing migrations for: {app}")
+                        cursor.execute(f"DELETE FROM django_migrations WHERE app = '{app}';")
                 
-                # Now try to migrate again
-                call_command('migrate', interactive=False)
+                # Manual commit to ensure SQL is applied BEFORE call_command
+                if not connection.get_autocommit():
+                    connection.commit()
+                
+                print("History cleared. Now running migrate --fake-initial...")
+                # Now try to migrate again with fake-initial to handle existing tables
+                call_command('migrate', fake_initial=True, interactive=False)
                 return response.Response({
                     "status": "success",
-                    "message": "Aggressive migration fix successful. Records cleared and migrations applied."
+                    "message": "Aggressive migration fix successful. History cleared and migrations applied."
                 })
 
             if mode == 'fix':
