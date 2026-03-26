@@ -19,6 +19,29 @@ class OTPCodeViewSet(viewsets.ModelViewSet):
     serializer_class = OTPCodeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+class PingView(views.APIView):
+    """
+    Diagnostic view to check database and model health in production.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        try:
+            user_count = User.objects.count()
+            otp_count = OTPCode.objects.count()
+            return response.Response({
+                "status": "ok",
+                "database": "connected",
+                "user_count": user_count,
+                "otp_count": otp_count,
+                "environment": "production" if not settings.DEBUG else "development"
+            })
+        except Exception as e:
+            return response.Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class OTPRequestView(views.APIView):
     permission_classes = [permissions.AllowAny]
     throttle_scope = 'otp_request'
@@ -60,12 +83,14 @@ class OTPRequestView(views.APIView):
                 message, 
                 from_email, 
                 [email],
-                fail_silently=True  # Keep False for now to catch the exact error in logs
+                fail_silently=False  # Changed to False to catch the exact error in logs
             )
         except Exception as e:
-            # Important: Don't let email failure crash the 200 response
+            # Important: Log the error for Render logs
             print(f"SMTP ERROR for {email}: {str(e)}")
-            # In production, we should use fail_silently=True or a background task
+            # For now, let's include the error in the response if DEBUG is on or for testing
+            if settings.DEBUG:
+                return response.Response({"error": f"Email failure: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response({
             "message": "OTP sent successfully",
