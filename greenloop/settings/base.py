@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_gis",
     "django_filters",
     "corsheaders",
     "channels",
@@ -142,6 +143,12 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "GreenLoop Backend Architecture",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+    ],
+    "COMPONENT_SPLIT_REQUEST": True,
+    # Tell drf-spectacular about GIS field types
+    "EXTENSIONS_MODULE": "greenloop.spectacular_extensions",
 }
 
 # CORS
