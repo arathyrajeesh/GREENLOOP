@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from drf_spectacular.utils import extend_schema
 from .models import OTPCode
 from django.core.management import call_command
+from django.db import connection
 from .serializers import (
     OTPCodeSerializer, 
     OTPRequestSerializer, 
@@ -52,6 +53,19 @@ class MigrateView(views.APIView):
     def get(self, request):
         mode = request.query_params.get('type', 'standard')
         try:
+            if mode == 'fix_hard':
+                # Aggressive fix: manually clear migration history for problematic apps
+                print("Running aggressive migration fix (raw SQL)...")
+                with connection.cursor() as cursor:
+                    cursor.execute("DELETE FROM django_migrations WHERE app IN ('admin', 'auth', 'sessions', 'contenttypes');")
+                
+                # Now try to migrate again
+                call_command('migrate', interactive=False)
+                return response.Response({
+                    "status": "success",
+                    "message": "Aggressive migration fix successful. Records cleared and migrations applied."
+                })
+
             if mode == 'fix':
                 # Emergency fix for "InconsistentMigrationHistory"
                 # This happens when switching to custom AUTH_USER_MODEL on existing DB
