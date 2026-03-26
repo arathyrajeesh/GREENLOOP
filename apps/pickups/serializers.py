@@ -5,6 +5,7 @@ class PickupSerializer(GeoFeatureModelSerializer):
     class Meta:
         model = Pickup
         geo_field = "location"
+        id_field = "id"
         fields = [
             'id', 'resident', 'ward', 'waste_type', 
             'status', 'scheduled_date', 'qr_code', 

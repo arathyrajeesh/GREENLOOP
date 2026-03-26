@@ -24,7 +24,10 @@ class Route(models.Model):
         """Returns the Hausdorff distance between planned and actual paths."""
         if not self.actual_path:
             return None
-        return self.planned_path.hausdorff_distance(self.actual_path)
+        if hasattr(self.planned_path, 'hausdorff_distance'):
+            return self.planned_path.hausdorff_distance(self.actual_path)
+        # Fallback to simple distance between centroids if hausdorff is unavailable
+        return self.planned_path.centroid.distance(self.actual_path.centroid)
 
     def __str__(self):
         return f"Route for {self.hks_worker} on {self.route_date}"

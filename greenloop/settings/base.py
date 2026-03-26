@@ -1,11 +1,44 @@
 from pathlib import Path
+import os
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = "your-secret"
+SECRET_KEY = "your-secret-key"
 DEBUG = False
 
 ALLOWED_HOSTS = []
+
+# REST Framework
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+    "DEFAULT_FILTER_BACKENDS": (
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "GreenLoop API",
+    "DESCRIPTION": "GreenLoop Backend Architecture",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "ROTATE_REFRESH_TOKENS": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 INSTALLED_APPS = [
     "daphne",  # for ASGI
@@ -16,6 +49,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.gis",
 
     # Third-party
     "drf_spectacular",
@@ -25,7 +59,6 @@ INSTALLED_APPS = [
     "django_filters",
     "corsheaders",
     "channels",
-    "django.contrib.gis",
 
     # Local apps
     "apps.accounts",
@@ -114,56 +147,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# REST Framework
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
-    "DEFAULT_FILTER_BACKENDS": (
-        "django_filters.rest_framework.DjangoFilterBackend",
-    ),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-}
-
-from datetime import timedelta
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
-    "ROTATE_REFRESH_TOKENS": True,
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
-
-SPECTACULAR_SETTINGS = {
-    "TITLE": "GreenLoop API",
-    "DESCRIPTION": "GreenLoop Backend Architecture",
-    "VERSION": "1.0.0",
-    "SERVE_INCLUDE_SCHEMA": False,
-    "POSTPROCESSING_HOOKS": [
-        "drf_spectacular.hooks.postprocess_schema_enums",
-    ],
-    "COMPONENT_SPLIT_REQUEST": True,
-}
-
-# Load GIS field type extensions for drf-spectacular
-try:
-    import greenloop.spectacular_extensions  # noqa - registers field extensions via class definition
-except Exception:
-    pass
-
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True  # For development/Flutter Web
-
 AUTH_USER_MODEL = "users.User"
-
 CELERY_TASK_SERIALIZER = "json"
 
-# Email Settings (SMTP)
-import os
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))

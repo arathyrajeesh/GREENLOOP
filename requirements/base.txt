@@ -1,7 +1,7 @@
 Django>=5.0,<5.1
 channels>=4.0.0
 daphne>=4.0.0
-djangorestframework
+djangorestframework>=3.14,<3.16
 psycopg2-binary
 celery
 redis

@@ -1,7 +1,9 @@
 import os
 import django
-import uuid
+import pytest
 from decimal import Decimal
+from django.contrib.gis.geos import Point
+from django.db.models import Sum
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'greenloop.settings')
 django.setup()
@@ -11,10 +13,12 @@ from apps.wards.models import Ward
 from apps.pickups.models import Pickup
 from apps.rewards.models import Reward
 from apps.payments.models import FeeCollection
-from django.contrib.gis.geos import Point
-from django.db.models import Sum
 
-def test_qr_generation():
+@pytest.mark.django_db
+def test_all_features():
+    """All-in-one feature test to handle database isolation in pytest-django"""
+    
+    # 1. QR Generation
     print("Testing QR Code Generation...")
     user, _ = User.objects.get_or_create(email="test_resident@example.com", defaults={"name": "Test Resident", "role": "RESIDENT"})
     ward, _ = Ward.objects.get_or_create(
@@ -33,12 +37,11 @@ def test_qr_generation():
         status="pending"
     )
     assert pickup.qr_code is not None
-    assert len(pickup.qr_code) == 64  # SHA-256 is 64 chars
+    assert len(pickup.qr_code) == 64
     print(f"SUCCESS: Generated QR hash: {pickup.qr_code[:10]}...")
 
-def test_reward_aggregation():
+    # 2. Reward aggregation
     print("Testing Reward Point Aggregation...")
-    user = User.objects.get(email="test_resident@example.com")
     Reward.objects.create(resident=user, points=50, description="Earned 50", transaction_type="EARNED")
     Reward.objects.create(resident=user, points=-10, description="Spent 10", transaction_type="REDEEMED")
     
@@ -46,25 +49,13 @@ def test_reward_aggregation():
     assert total == 40
     print(f"SUCCESS: Total points for resident: {total}")
 
-def test_fee_collection_receipt():
+    # 3. Fee Collection Receipt
     print("Testing Fee Collection Receipt Generation...")
-    user = User.objects.get(email="test_resident@example.com")
-    ward = Ward.objects.get(number=101)
     fee = FeeCollection.objects.create(
         resident=user,
         ward=ward,
         amount=Decimal("150.00"),
-        payment_mode="CASH"
+        payment_method="CASH"
     )
     assert fee.receipt_number.startswith("FC-")
     print(f"SUCCESS: Generated Receipt: {fee.receipt_number}")
-
-if __name__ == "__main__":
-    try:
-        test_qr_generation()
-        test_reward_aggregation()
-        test_fee_collection_receipt()
-        print("\nALL SYSTEM TESTS PASSED!")
-    except Exception as e:
-        print(f"\nTEST FAILED: {e}")
-        exit(1)
