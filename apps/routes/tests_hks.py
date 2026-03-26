@@ -118,20 +118,19 @@ class HKSEndpointsTestCase(TestCase):
         # Ensure no log created
         self.assertFalse(AttendanceLog.objects.filter(worker=self.worker2).exists())
 
-    def test_attendance_missing_ppe(self):
-        """Test attendance rejected if PPE checklist is incomplete"""
+    def test_attendance_missing_photo(self):
+        """Test attendance rejected if PPE photo is missing"""
         self.client.force_authenticate(user=self.worker)
         data = {
             "check_in_location": {"type": "Point", "coordinates": [5.0, 5.0]},
-            "ppe_photo_url": "https://example.com/photo.jpg",
             "has_vest": True,
             "has_mask": True,
-            "has_gloves": False, # Missing gloves
+            "has_gloves": False, # Valid to be missing gloves now
             "has_boots": True,
         }
         response = self.client.post(self.attendance_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['error'], "All PPE items must be confirmed for check-in")
+        self.assertEqual(response.data['error'], "PPE photo is required for check-in")
 
     def test_attendance_checkout(self):
         """Test worker checkout mutation securely closes the day log"""

@@ -54,8 +54,9 @@ class WorkerAttendanceView(APIView):
         has_vest = str(request.data.get('has_vest', 'False')).lower() == 'true'
         has_boots = str(request.data.get('has_boots', 'False')).lower() == 'true'
         
-        if not all([has_gloves, has_mask, has_vest, has_boots]):
-            return Response({"error": "All PPE items must be confirmed for check-in"}, status=status.HTTP_400_BAD_REQUEST)
+        ppe_photo_url = request.data.get('ppe_photo_url')
+        if not ppe_photo_url:
+            return Response({"error": "PPE photo is required for check-in"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Parse Location
         loc_data = request.data.get('check_in_location')
@@ -86,7 +87,7 @@ class WorkerAttendanceView(APIView):
             date=today,
             check_in=timezone.now().time(),
             check_in_location=check_in_point,
-            ppe_photo_url=request.data.get('ppe_photo_url'),
+            ppe_photo_url=ppe_photo_url,
             has_gloves=has_gloves,
             has_mask=has_mask,
             has_vest=has_vest,
