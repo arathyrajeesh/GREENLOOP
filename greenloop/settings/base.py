@@ -147,9 +147,13 @@ SPECTACULAR_SETTINGS = {
         "drf_spectacular.hooks.postprocess_schema_enums",
     ],
     "COMPONENT_SPLIT_REQUEST": True,
-    # Tell drf-spectacular about GIS field types
-    "EXTENSIONS_MODULE": "greenloop.spectacular_extensions",
 }
+
+# Load GIS field type extensions for drf-spectacular
+try:
+    import greenloop.spectacular_extensions  # noqa - registers field extensions via class definition
+except Exception:
+    pass
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True  # For development/Flutter Web
