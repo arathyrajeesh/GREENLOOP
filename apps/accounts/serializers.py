@@ -16,3 +16,6 @@ class OTPVerifySerializer(serializers.Serializer):
 
 class BaseResponseSerializer(serializers.Serializer):
     message = serializers.CharField()
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()

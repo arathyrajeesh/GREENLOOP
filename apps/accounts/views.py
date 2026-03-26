@@ -9,11 +9,13 @@ from drf_spectacular.utils import extend_schema
 from .models import OTPCode
 from django.core.management import call_command
 from django.db import connection
+from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     OTPCodeSerializer, 
     OTPRequestSerializer, 
     OTPVerifySerializer,
-    BaseResponseSerializer
+    BaseResponseSerializer,
+    LogoutSerializer
 )
 
 class OTPCodeViewSet(viewsets.ModelViewSet):
@@ -210,3 +212,32 @@ class OTPVerifyView(views.APIView):
                 
         except User.DoesNotExist:
             return response.Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class LogoutView(views.APIView):
+    """
+    Blacklist the refresh token to logout the user.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(
+        request=LogoutSerializer,
+        responses={200: BaseResponseSerializer},
+        description="Blacklist the refresh token to logout the user."
+    )
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                return response.Response({"message": "Refresh token is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return response.Response(
+                {"message": "Successfully logged out"},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return response.Response(
+                {"message": "Invalid token or already blacklisted"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
