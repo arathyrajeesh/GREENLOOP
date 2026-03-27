@@ -6,4 +6,4 @@ class WardSerializer(GeoFeatureModelSerializer):
         model = Ward
         geo_field = "boundary" # Use boundary as the primary geo_field for GeoJSON
         id_field = "id"
-        fields = ['id', 'name', 'number', 'location', 'created_at']
+        fields = ['id', 'name', 'number', 'location', 'boundary', 'created_at']
