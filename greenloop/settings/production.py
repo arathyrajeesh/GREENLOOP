@@ -41,6 +41,3 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
-
-# Prevent indefinite hanging on Render if SMTP is blocked
-EMAIL_TIMEOUT = 5
