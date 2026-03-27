@@ -65,7 +65,6 @@ class MigrateView(views.APIView):
         try:
             if mode == 'showmigrations':
                 import io
-                from django.core.management import call_command
                 out = io.StringIO()
                 call_command('showmigrations', stdout=out)
                 return response.Response({
@@ -74,22 +73,13 @@ class MigrateView(views.APIView):
                 })
 
             if mode == 'reset_nuclear':
-                # Last resort: drop everything and start over, but skip PostGIS internals
-                print("NUCLEAR RESET: Dropping all tables in public schema (skipping PostGIS)...")
+                # Last resort: drop everything and start over, but skip views to avoid PostGIS/system issues
+                print("NUCLEAR RESET: Dropping all tables in public schema (skipping views/PostGIS internals)...")
                 with connection.cursor() as cursor:
                     cursor.execute("""
                         DO $$ DECLARE
                             r RECORD;
                         BEGIN
-                            -- Drop views first, skipping PostGIS internals
-                            FOR r IN (
-                                SELECT viewname FROM pg_views 
-                                WHERE schemaname = 'public' 
-                                AND viewname NOT IN ('geography_columns', 'geometry_columns', 'raster_columns', 'raster_overviews')
-                            ) LOOP
-                                EXECUTE 'DROP VIEW IF EXISTS ' || quote_ident(r.viewname) || ' CASCADE';
-                            END LOOP;
-
                             -- Drop tables, skipping spatial_ref_sys
                             FOR r IN (
                                 SELECT tablename FROM pg_tables 
