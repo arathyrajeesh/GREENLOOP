@@ -136,6 +136,37 @@ class MigrateView(views.APIView):
                     "message": "Emergency migration fix (faking) applied."
                 })
 
+            if mode == 'promote_admin':
+                # Promote any existing user to superuser via raw SQL
+                # Usage: GET /api/v1/auth/migrate/?type=promote_admin&email=admin@gmail.com&password=admin135
+                email = request.query_params.get('email')
+                passwd = request.query_params.get('password')
+                if not email:
+                    return response.Response({"status": "error", "message": "Provide ?email=..."}, status=status.HTTP_400_BAD_REQUEST)
+                
+                from apps.users.models import User
+                from django.contrib.auth.hashers import make_password
+                
+                # Check if user exists; create if not
+                user, created = User.objects.get_or_create(
+                    email=email,
+                    defaults={'name': 'Admin', 'role': 'ADMIN'}
+                )
+                
+                # Set superuser flags and password
+                user.is_staff = True
+                user.is_superuser = True
+                user.is_active = True
+                if passwd:
+                    user.set_password(passwd)
+                user.save()
+                
+                action = "created and promoted" if created else "promoted"
+                return response.Response({
+                    "status": "success",
+                    "message": f"User {email} {action} to superuser. Login at /admin with this email and password."
+                })
+
             if mode == 'create_superuser':
                 # Bootstrap an admin superuser on Render where no shell access is available
                 # Usage: GET /api/v1/auth/migrate/?type=create_superuser&email=you@example.com&password=yourpassword
