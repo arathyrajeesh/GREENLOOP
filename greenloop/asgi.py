@@ -11,10 +11,13 @@ os.environ.setdefault(
 
 django_asgi_app = get_asgi_application()
 
+# Import middleware after django.setup() (called by get_asgi_application)
+from greenloop.middleware import JWTAuthMiddleware
+
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
 
-    "websocket": AuthMiddlewareStack(
+    "websocket": JWTAuthMiddleware(
         URLRouter(
             greenloop.routing.websocket_urlpatterns
         )

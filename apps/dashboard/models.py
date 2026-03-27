@@ -11,8 +11,12 @@ class SyncQueue(models.Model):
     STATUS_CHOICES = (
         ("PENDING", "Pending"),
         ("SYNCED", "Synced"),
+        ("CONFLICT", "Conflict"),
         ("ERROR", "Error"),
     )
+
+    client_id = models.UUIDField(null=True, blank=True, help_text="Unique ID from the mobile app for idempotency")
+    client_timestamp = models.DateTimeField(null=True, blank=True, help_text="When the action occurred on the device")
 
     user = models.ForeignKey(
         "users.User",
@@ -29,6 +33,7 @@ class SyncQueue(models.Model):
     payload = models.JSONField(default=dict, blank=True)
     is_synced = models.BooleanField(default=False)
     synced_at = models.DateTimeField(null=True, blank=True)
+    conflict_reason = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

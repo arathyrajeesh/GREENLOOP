@@ -36,7 +36,7 @@ class SyncOfflineTestCase(TestCase):
         )
         self.client.force_authenticate(user=self.worker)
         self.prefetch_url = reverse('syncqueue-prefetch')
-        self.push_url = reverse('syncqueue-push')
+        self.push_url = reverse('syncqueue-upload')
 
     def test_prefetch_data_bundle(self):
         """Test that prefetch returns route, pickups, and ward data"""
@@ -48,8 +48,8 @@ class SyncOfflineTestCase(TestCase):
         # But we manually wrapped the single ward in a list in the view
         self.assertEqual(len(response.data['wards']), 1)
 
-    def test_bulk_push_mutations(self):
-        """Test that worker can push multiple sync items at once"""
+    def test_bulk_upload(self):
+        """Test that worker can upload multiple sync items at once"""
         data = [
             {
                 "model_name": "Pickup",
@@ -65,8 +65,8 @@ class SyncOfflineTestCase(TestCase):
             }
         ]
         response = self.client.post(self.push_url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['items']), 2)
         self.assertEqual(SyncQueue.objects.filter(user=self.worker).count(), 2)
 
     def test_sync_queue_user_silo(self):
@@ -76,3 +76,72 @@ class SyncOfflineTestCase(TestCase):
         
         response = self.client.get(reverse('syncqueue-list'))
         self.assertEqual(len(response.data), 0) # Only see their own
+
+    def test_upload_chronological_processing(self):
+        """Test that items are processed in chronological order based on client_timestamp"""
+        upload_url = reverse('syncqueue-upload')
+        c_id1 = uuid.uuid4()
+        c_id2 = uuid.uuid4()
+        data = [
+            {
+                "client_id": str(c_id2),
+                "client_timestamp": "2026-03-26T12:00:00Z",
+                "model_name": "Pickup",
+                "object_id": str(self.pickup.id),
+                "action": "UPDATE",
+                "payload": {"status": "completed"}
+            },
+            {
+                "client_id": str(c_id1),
+                "client_timestamp": "2026-03-26T11:00:00Z",
+                "model_name": "Pickup",
+                "object_id": str(self.pickup.id),
+                "action": "UPDATE",
+                "payload": {"status": "accepted"}
+            }
+        ]
+        # Although uploaded in order (c_id2, c_id1), c_id1 has an earlier timestamp.
+        # But wait, our current logic just creates them. The final state of the pickup should reflect the LATEST valid update.
+        response = self.client.post(upload_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # Verify pickup final state is 'completed' (from c_id2)
+        self.pickup.refresh_from_db()
+        self.assertEqual(self.pickup.status, 'completed')
+
+    def test_upload_conflict_detection(self):
+        """Test that completing a cancelled pickup flags a conflict"""
+        upload_url = reverse('syncqueue-upload')
+        self.pickup.status = 'cancelled'
+        self.pickup.save()
+        
+        data = [{
+            "client_id": str(uuid.uuid4()),
+            "client_timestamp": timezone.now().isoformat(),
+            "model_name": "Pickup",
+            "object_id": str(self.pickup.id),
+            "action": "UPDATE",
+            "payload": {"status": "completed"}
+        }]
+        response = self.client.post(upload_url, data, format='json')
+        self.assertEqual(response.data['items'][0]['status'], 'CONFLICT')
+        self.assertIn("admin-cancelled", response.data['items'][0]['conflict_reason'])
+
+    def test_upload_idempotency(self):
+        """Test that re-uploading the same client_id is skipped"""
+        upload_url = reverse('syncqueue-upload')
+        c_id = uuid.uuid4()
+        data = [{
+            "client_id": str(c_id),
+            "client_timestamp": timezone.now().isoformat(),
+            "model_name": "Pickup",
+            "object_id": str(self.pickup.id),
+            "action": "UPDATE",
+            "payload": {"status": "completed"}
+        }]
+        # First upload
+        self.client.post(upload_url, data, format='json')
+        # Second upload
+        response = self.client.post(upload_url, data, format='json')
+        self.assertEqual(response.data['items'][0]['message'], "Already processed")
+        self.assertEqual(SyncQueue.objects.filter(client_id=c_id).count(), 1)

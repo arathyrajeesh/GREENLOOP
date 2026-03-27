@@ -5,6 +5,8 @@ djangorestframework>=3.14,<3.16
 psycopg2-binary
 celery
 redis
+channels-redis
+django-redis
 django-filter
 django-cors-headers
 drf-spectacular
