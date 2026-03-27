@@ -6,6 +6,7 @@ venv/
 env/
 .venv/
 staticfiles/
+pickups/
 media/
 .pytest_cache/
 .DS_Store

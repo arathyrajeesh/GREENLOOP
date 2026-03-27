@@ -18,3 +18,4 @@ uvicorn[standard]
 djangorestframework-gis
 Pillow
 requests
+qrcode[pil]

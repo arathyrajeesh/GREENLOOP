@@ -42,6 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         related_name="users"
     )
     address = models.TextField(blank=True, help_text="User's residential or business address")
+    fcm_token = models.CharField(max_length=255, null=True, blank=True, help_text="Firebase Cloud Messaging token for push notifications")
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

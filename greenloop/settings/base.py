@@ -153,6 +153,8 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True  # For development/Flutter Web
@@ -162,6 +164,10 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_BEAT_SCHEDULE = {
     "escalate-complaints-every-hour": {
         "task": "apps.complaints.tasks.check_pending_complaints",
+        "schedule": 3600.0,  # Every hour
+    },
+    "cleanup-expired-otps-hourly": {
+        "task": "apps.accounts.tasks.cleanup_expired_otps",
         "schedule": 3600.0,  # Every hour
     },
 }

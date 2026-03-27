@@ -39,7 +39,7 @@ router.register(r'recycler-purchases', RecyclerPurchaseViewSet, basename='recycl
 router.register(r'recycling-certificates', RecyclingCertificateViewSet, basename='recycling-certificate')
 router.register(r'notifications', NotificationViewSet, basename='notification')
 router.register(r'otp-codes', OTPCodeViewSet, basename='otpcode')
-router.register(r'sync-queue', SyncQueueViewSet, basename='syncqueue')
+router.register(r'sync', SyncQueueViewSet, basename='sync')
 router.register(r'report-categories', ReportCategoryViewSet, basename='reportcategory')
 router.register(r'reports', ReportViewSet, basename='report')
 
@@ -74,3 +74,8 @@ urlpatterns = [
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
+from django.conf import settings
+from django.conf.urls.static import static
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

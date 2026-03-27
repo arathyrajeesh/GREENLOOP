@@ -53,20 +53,34 @@ class Pickup(models.Model):
         dt_naive = datetime.combine(self.scheduled_date, parsed_time)
         return timezone.make_aware(dt_naive)
     qr_code = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    qr_code_image = models.ImageField(upload_to='pickups/qrcodes/', null=True, blank=True, help_text="Generated QR code image for verification")
     weight_kg = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Estimated weight of waste collected")
     completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if not self.qr_code:
-            import hashlib
-            hash_input = f"{self.id}{self.resident_id}{self.ward_id}{timezone.now().timestamp()}"
-            self.qr_code = hashlib.sha256(hash_input.encode()).hexdigest()
-            
+        is_new = self._state.adding
+        old_status = None
+        if not is_new:
+            try:
+                old_status = Pickup.objects.get(id=self.id).status
+            except Pickup.DoesNotExist:
+                pass
+
         if self.status == 'completed' and not self.completed_at:
             self.completed_at = timezone.now()
+            
         super().save(*args, **kwargs)
+        
+        # Trigger notifications after save
+        from apps.notifications.tasks import notify_resident_pickup_assigned, notify_resident_pickup_complete
+        
+        if self.status == 'accepted' and old_status != 'accepted':
+            notify_resident_pickup_assigned.delay(self.id)
+            
+        if self.status == 'completed' and old_status != 'completed':
+            notify_resident_pickup_complete.delay(self.id)
 
     class Meta:
         indexes = [
