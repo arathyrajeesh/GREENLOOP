@@ -187,24 +187,25 @@ class OTPRequestView(views.APIView):
         subject = "GreenLoop Login OTP"
         message = f"Your GreenLoop login OTP is {otp_code}. It is valid for 5 minutes."
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@greenloop.com')
+        smtp_error = None
         try:
             send_mail(
                 subject, 
                 message, 
                 from_email, 
                 [email],
-                fail_silently=False  # Changed to False to catch the exact error in logs
+                fail_silently=False  
             )
         except Exception as e:
             # Important: Log the error for Render logs
             print(f"SMTP ERROR for {email}: {str(e)}")
-            # For now, let's include the error in the response if DEBUG is on or for testing
-            if settings.DEBUG:
-                return response.Response({"error": f"Email failure: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            smtp_error = str(e)
+            return response.Response({"error": f"Email failure: {smtp_error}", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response({
             "message": "OTP sent successfully",
-            "is_new_user": created
+            "is_new_user": created,
+            "test_mode_otp": otp_code  # NOTE: remove this before real production
         }, status=status.HTTP_200_OK)
 
 class OTPVerifyView(views.APIView):
