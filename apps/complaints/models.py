@@ -3,10 +3,18 @@ from django.utils.translation import gettext_lazy as _
 
 class Complaint(models.Model):
     STATUS_CHOICES = (
-        ("PENDING", "Pending"),
-        ("IN_PROGRESS", "In Progress"),
-        ("RESOLVED", "Resolved"),
-        ("REJECTED", "Rejected"),
+        ("submitted", "Submitted"),
+        ("assigned", "Assigned"),
+        ("in-progress", "In Progress"),
+        ("resolved", "Resolved"),
+        ("closed", "Closed"),
+    )
+
+    PRIORITY_CHOICES = (
+        (1, "Low"),
+        (2, "Medium"),
+        (3, "High"),
+        (4, "Urgent"),
     )
 
     CATEGORY_CHOICES = (
@@ -27,6 +35,7 @@ class Complaint(models.Model):
         limit_choices_to={'role__in': ['RESIDENT', 'HKS_WORKER']}
     )
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    priority = models.IntegerField(choices=PRIORITY_CHOICES, default=2)
     description = models.TextField()
     location = models.PointField(null=True, blank=True, help_text="GPS location of the complaint")
     image = models.ImageField(upload_to="complaints/", null=True, blank=True)
@@ -38,7 +47,8 @@ class Complaint(models.Model):
         related_name="assigned_complaints",
         limit_choices_to={'role__in': ['ADMIN', 'HKS_WORKER']}
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="submitted")
+    is_escalated = models.BooleanField(default=False)
     resolved_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -152,7 +152,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True  # For development/Flutter Web
 AUTH_USER_MODEL = "users.User"
+# Celery
 CELERY_TASK_SERIALIZER = "json"
+CELERY_BEAT_SCHEDULE = {
+    "escalate-complaints-every-hour": {
+        "task": "apps.complaints.tasks.check_pending_complaints",
+        "schedule": 3600.0,  # Every hour
+    },
+}
 
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")

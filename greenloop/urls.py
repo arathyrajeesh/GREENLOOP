@@ -20,7 +20,7 @@ from apps.payments.views import FeeCollectionViewSet
 from apps.recyclers.views import MaterialTypeViewSet, RecyclerPurchaseViewSet, RecyclingCertificateViewSet
 from apps.notifications.views import NotificationViewSet
 from apps.accounts.views import OTPCodeViewSet, OTPRequestView, OTPVerifyView, PingView, MigrateView, LogoutView
-from apps.dashboard.views import SyncQueueViewSet, LiveMapView
+from apps.dashboard.views import SyncQueueViewSet
 from apps.reports.views import ReportCategoryViewSet, ReportViewSet
 
 router = routers.DefaultRouter()
