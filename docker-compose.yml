@@ -22,7 +22,7 @@ services:
   django:
     build: .
     container_name: greenloop_django
-    command: gunicorn --reload greenloop.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn --workers 3 --timeout 120 --reload greenloop.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - .:/app
     ports:

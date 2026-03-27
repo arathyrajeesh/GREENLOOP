@@ -20,7 +20,7 @@ from apps.payments.views import FeeCollectionViewSet
 from apps.recyclers.views import MaterialTypeViewSet, RecyclerPurchaseViewSet, RecyclingCertificateViewSet
 from apps.notifications.views import NotificationViewSet
 from apps.accounts.views import OTPCodeViewSet, OTPRequestView, OTPVerifyView, PingView, MigrateView, LogoutView
-from apps.dashboard.views import SyncQueueViewSet
+from apps.dashboard.views import SyncQueueViewSet, LiveMapView
 from apps.reports.views import ReportCategoryViewSet, ReportViewSet
 
 router = routers.DefaultRouter()
@@ -52,9 +52,6 @@ urlpatterns = [
     path('', RedirectView.as_view(pattern_name='swagger-ui', permanent=False)),
     path('health/', health_check, name='health-check'),
     path('admin/', admin.site.urls),
-
-    # API v1
-    path('api/v1/health/', health_check, name='api-health-check'),
     
     # Custom HKS API Endpoints
     path('api/v1/hks/routes/today/', TodayRouteView.as_view(), name='hks-route-today'),

@@ -8,6 +8,7 @@ class Pickup(models.Model):
         ('wet', 'Wet Waste'),
         ('hazardous', 'Hazardous Waste'),
         ('e-waste', 'E-Waste'),
+        ('biomedical', 'Biomedical Waste'),
     )
     STATUS_CHOICES = (
         ('pending', 'Pending'),
