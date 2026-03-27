@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "rest_framework_gis",
-    "anymail",
     "django_filters",
     "corsheaders",
     "channels",
@@ -162,8 +161,6 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
-ANYMAIL = {
-    "RESEND_API_KEY": os.environ.get("RESEND_API_KEY", "re_ET3ds24t_5KgxR8P8MMLeNmDEFEDNCbck"),
-}
+# Custom Email API Configuration (bypassing SMTP for Render)
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "re_ET3ds24t_5KgxR8P8MMLeNmDEFEDNCbck")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "onboarding@resend.dev")

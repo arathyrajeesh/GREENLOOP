@@ -10,6 +10,7 @@ from .models import OTPCode
 from django.core.management import call_command
 from django.db import connection
 from rest_framework_simplejwt.tokens import RefreshToken
+from .utils import send_resend_email
 from .serializers import (
     OTPCodeSerializer, 
     OTPRequestSerializer, 
@@ -183,29 +184,17 @@ class OTPRequestView(views.APIView):
         otp_code = ''.join(random.choices(string.digits, k=6))
         OTPCode.objects.create(user=user, code=otp_code)
         
-        # Send actual email using native send_mail (now routed via Anymail Resend API)
+        # Send via custom Resend HTTPS utility (bypasses Django SMTP and Render blocks)
         subject = "GreenLoop Login OTP"
-        text_content = f"Your GreenLoop login OTP is {otp_code}. It is valid for 5 minutes."
         html_content = f"<p>Your GreenLoop login OTP is <strong>{otp_code}</strong>. It is valid for 5 minutes.</p>"
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')
         
-        try:
-            send_mail(
-                subject,
-                text_content,
-                from_email,
-                [email],
-                html_message=html_content,
-                fail_silently=False
-            )
-        except Exception as e:
-            # Important: Log the error for Render logs
-            print(f"RESEND API ERROR for {email}: {str(e)}")
-            smtp_error = str(e)
-            return response.Response({"error": f"Email failure: {smtp_error}", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        email_sent = send_resend_email(email, subject, html_content)
+        
+        if not email_sent:
+            return response.Response({"error": "Failed to send email via API.", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response({
-            "message": "OTP sent successfully",
+            "message": "OTP sent successfully via Resend API",
             "is_new_user": created,
             "test_mode_otp": otp_code  # NOTE: remove this before real production
         }, status=status.HTTP_200_OK)
