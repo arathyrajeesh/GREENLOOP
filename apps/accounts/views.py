@@ -96,6 +96,29 @@ class MigrateView(views.APIView):
                     "message": "Emergency migration fix (faking) applied."
                 })
             
+            if mode == 'reset_nuclear':
+                # Last resort: drop everything and start over
+                print("NUCLEAR RESET: Dropping all tables in public schema...")
+                with connection.cursor() as cursor:
+                    cursor.execute("""
+                        DO $$ DECLARE
+                            r RECORD;
+                        BEGIN
+                            FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+                                EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                            END LOOP;
+                        END $$;
+                    """)
+                if not connection.get_autocommit():
+                    connection.commit()
+                
+                print("All tables dropped. Running migrate...")
+                call_command('migrate', interactive=False)
+                return response.Response({
+                    "status": "success", 
+                    "message": "Nuclear reset successful. Database schema recreated from scratch."
+                })
+
             # Trigger standard migrate command
             print("Running standard migrations...")
             call_command('migrate', interactive=False)
@@ -104,10 +127,13 @@ class MigrateView(views.APIView):
                 "message": "Migrations applied successfully."
             })
         except Exception as e:
-            print(f"MIGRATION ERROR: {str(e)}")
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"MIGRATION ERROR:\n{error_details}")
             return response.Response({
                 "status": "error",
-                "message": str(e)
+                "message": str(e),
+                "traceback": error_details if settings.DEBUG else "Traceback hidden"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class OTPRequestView(views.APIView):
