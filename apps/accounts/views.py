@@ -183,27 +183,27 @@ class OTPRequestView(views.APIView):
         otp_code = ''.join(random.choices(string.digits, k=6))
         OTPCode.objects.create(user=user, code=otp_code)
         
-        # Send actual SMTP email
-        subject = "GreenLoop Login OTP"
-        message = f"Your GreenLoop login OTP is {otp_code}. It is valid for 5 minutes."
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@greenloop.com')
-        smtp_error = None
-        try:
-            send_mail(
-                subject, 
-                message, 
-                from_email, 
-                [email],
-                fail_silently=False  
-            )
-        except Exception as e:
-            # Important: Log the error for Render logs
-            print(f"SMTP ERROR for {email}: {str(e)}")
-            smtp_error = str(e)
-            return response.Response({"error": f"Email failure: {smtp_error}", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Send actual SMTP email (COMMENTED OUT TEMPORARILY TO BYPASS HANGING)
+        # subject = "GreenLoop Login OTP"
+        # message = f"Your GreenLoop login OTP is {otp_code}. It is valid for 5 minutes."
+        # from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@greenloop.com')
+        # smtp_error = None
+        # try:
+        #     send_mail(
+        #         subject, 
+        #         message, 
+        #         from_email, 
+        #         [email],
+        #         fail_silently=False  
+        #     )
+        # except Exception as e:
+        #     # Important: Log the error for Render logs
+        #     print(f"SMTP ERROR for {email}: {str(e)}")
+        #     smtp_error = str(e)
+        #     return response.Response({"error": f"Email failure: {smtp_error}", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response({
-            "message": "OTP sent successfully",
+            "message": "OTP generated successfully (Email bypassed)",
             "is_new_user": created,
             "test_mode_otp": otp_code  # NOTE: remove this before real production
         }, status=status.HTTP_200_OK)
