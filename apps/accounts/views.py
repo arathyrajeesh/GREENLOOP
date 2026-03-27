@@ -31,11 +31,17 @@ class PingView(views.APIView):
 
     def get(self, request):
         try:
-            user_count = User.objects.count()
-            otp_count = OTPCode.objects.count()
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+                tables = [row[0] for row in cursor.fetchall()]
+
+            user_count = User.objects.count() if 'users_user' in tables else "Table Missing"
+            otp_count = OTPCode.objects.count() if 'accounts_otpcode' in tables else "Table Missing"
+            
             return response.Response({
                 "status": "ok",
                 "database": "connected",
+                "tables": tables,
                 "user_count": user_count,
                 "otp_count": otp_count,
                 "environment": "production" if not settings.DEBUG else "development"
