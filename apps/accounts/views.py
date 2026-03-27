@@ -28,6 +28,7 @@ class PingView(views.APIView):
     Diagnostic view to check database and model health in production.
     """
     permission_classes = [permissions.AllowAny]
+    @extend_schema(responses={200: BaseResponseSerializer})
 
     def get(self, request):
         try:
@@ -58,9 +59,47 @@ class MigrateView(views.APIView):
     """
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(responses={200: BaseResponseSerializer})
     def get(self, request):
         mode = request.query_params.get('type', 'standard')
         try:
+            if mode == 'showmigrations':
+                import io
+                from django.core.management import call_command
+                out = io.StringIO()
+                call_command('showmigrations', stdout=out)
+                return response.Response({
+                    "status": "success",
+                    "migrations": out.getvalue()
+                })
+
+            if mode == 'reset_nuclear':
+                # Last resort: drop everything and start over
+                print("NUCLEAR RESET: Dropping all tables in public schema...")
+                with connection.cursor() as cursor:
+                    # Drop all views first, then tables
+                    cursor.execute("""
+                        DO $$ DECLARE
+                            r RECORD;
+                        BEGIN
+                            FOR r IN (SELECT viewname FROM pg_views WHERE schemaname = 'public') LOOP
+                                EXECUTE 'DROP VIEW IF EXISTS ' || quote_ident(r.viewname) || ' CASCADE';
+                            END LOOP;
+                            FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+                                EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
+                            END LOOP;
+                        END $$;
+                    """)
+                if not connection.get_autocommit():
+                    connection.commit()
+                
+                print("All dropped. Running migrate...")
+                call_command('migrate', interactive=False)
+                return response.Response({
+                    "status": "success", 
+                    "message": "Nuclear reset successful. Database schema recreated from scratch."
+                })
+
             if mode == 'fix_hard':
                 # Aggressive fix: manually clear migration history for problematic apps
                 print("Running aggressive migration fix (raw SQL) with explicit commit...")
@@ -192,6 +231,7 @@ class OTPRequestView(views.APIView):
         }, status=status.HTTP_200_OK)
 
 class OTPVerifyView(views.APIView):
+    serializer_class = OTPVerifySerializer
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(
