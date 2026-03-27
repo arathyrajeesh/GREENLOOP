@@ -9,6 +9,7 @@ from drf_spectacular.utils import extend_schema
 from .models import OTPCode
 from django.core.management import call_command
 from django.db import connection
+import resend
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import (
     OTPCodeSerializer, 
@@ -183,24 +184,25 @@ class OTPRequestView(views.APIView):
         otp_code = ''.join(random.choices(string.digits, k=6))
         OTPCode.objects.create(user=user, code=otp_code)
         
-        # Send actual SMTP email (COMMENTED OUT TEMPORARILY TO BYPASS HANGING)
-        # subject = "GreenLoop Login OTP"
-        # message = f"Your GreenLoop login OTP is {otp_code}. It is valid for 5 minutes."
-        # from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@greenloop.com')
-        # smtp_error = None
-        # try:
-        #     send_mail(
-        #         subject, 
-        #         message, 
-        #         from_email, 
-        #         [email],
-        #         fail_silently=False  
-        #     )
-        # except Exception as e:
-        #     # Important: Log the error for Render logs
-        #     print(f"SMTP ERROR for {email}: {str(e)}")
-        #     smtp_error = str(e)
-        #     return response.Response({"error": f"Email failure: {smtp_error}", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Send actual email using Resend API (bypasses Render SMTP block)
+        subject = "GreenLoop Login OTP"
+        html_content = f"<p>Your GreenLoop login OTP is <strong>{otp_code}</strong>. It is valid for 5 minutes.</p>"
+        
+        # Configure API key
+        resend.api_key = getattr(settings, 'RESEND_API_KEY', 're_ET3ds24t_5KgxR8P8MMLeNmDEFEDNCbck')
+        
+        try:
+            r = resend.Emails.send({
+                "from": "onboarding@resend.dev",
+                "to": email,
+                "subject": subject,
+                "html": html_content
+            })
+        except Exception as e:
+            # Important: Log the error for Render logs
+            print(f"RESEND ERROR for {email}: {str(e)}")
+            smtp_error = str(e)
+            return response.Response({"error": f"Email failure: {smtp_error}", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response({
             "message": "OTP generated successfully (Email bypassed)",
