@@ -16,8 +16,10 @@ from .serializers import (
     OTPRequestSerializer, 
     OTPVerifySerializer,
     BaseResponseSerializer,
-    LogoutSerializer
+    LogoutSerializer,
+    WorkerLoginSerializer
 )
+from django.contrib.auth import authenticate
 
 class OTPCodeViewSet(viewsets.ModelViewSet):
     queryset = OTPCode.objects.all()
@@ -335,3 +337,48 @@ class LogoutView(views.APIView):
                 {"message": "Invalid token or already blacklisted"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class WorkerLoginView(views.APIView):
+    serializer_class = WorkerLoginSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    @extend_schema(
+        request=WorkerLoginSerializer,
+        responses={200: BaseResponseSerializer}
+    )
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        username = serializer.validated_data.get('username')
+        password = serializer.validated_data.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if not user:
+            return response.Response({"error": "Invalid credentials providing username/password"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        if not user.is_active:
+            return response.Response({"error": "This account is inactive."}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        # Optional check: constrain to HKS_WORKER, RECYCLER, ADMIN
+        if user.role not in ['HKS_WORKER', 'RECYCLER', 'ADMIN']:
+             return response.Response({"error": "This login point is restricted to staff."}, status=status.HTTP_403_FORBIDDEN)
+             
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        refresh['role'] = user.role
+        refresh['ward_id'] = str(user.ward_id) if user.ward_id else None
+        
+        return response.Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role,
+                "ward_id": user.ward_id
+            }
+        }, status=status.HTTP_200_OK)

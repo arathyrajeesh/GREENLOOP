@@ -15,3 +15,22 @@ class UserSerializer(serializers.ModelSerializer):
         from apps.rewards.models import Reward
         from django.db.models import Sum
         return Reward.objects.filter(resident=obj).aggregate(Sum('points'))['points__sum'] or 0
+
+class WorkerRecyclerCreateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=True)
+    
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'name', 'role', 'ward']
+        
+    def validate_role(self, value):
+        if value not in ['HKS_WORKER', 'RECYCLER']:
+            raise serializers.ValidationError("Role must be HKS_WORKER or RECYCLER.")
+        return value
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User.objects.create_user(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user

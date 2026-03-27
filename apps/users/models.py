@@ -4,11 +4,12 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.utils.translation import gettext_lazy as _
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError(_("Email must be set"))
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+    def create_user(self, email=None, username=None, password=None, **extra_fields):
+        if not email and not username:
+            raise ValueError(_("Either Email or Username must be set"))
+        if email:
+            email = self.normalize_email(email)
+        user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -17,7 +18,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("role", "ADMIN")
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(email=email, password=password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = (
@@ -28,7 +29,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(_("email address"), unique=True, db_index=True)
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    email = models.EmailField(_("email address"), unique=True, db_index=True, null=True, blank=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
     name = models.CharField(max_length=255, help_text="Supports Malayalam names")
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="RESIDENT")
