@@ -74,18 +74,28 @@ class MigrateView(views.APIView):
                 })
 
             if mode == 'reset_nuclear':
-                # Last resort: drop everything and start over
-                print("NUCLEAR RESET: Dropping all tables in public schema...")
+                # Last resort: drop everything and start over, but skip PostGIS internals
+                print("NUCLEAR RESET: Dropping all tables in public schema (skipping PostGIS)...")
                 with connection.cursor() as cursor:
-                    # Drop all views first, then tables
                     cursor.execute("""
                         DO $$ DECLARE
                             r RECORD;
                         BEGIN
-                            FOR r IN (SELECT viewname FROM pg_views WHERE schemaname = 'public') LOOP
+                            -- Drop views first, skipping PostGIS internals
+                            FOR r IN (
+                                SELECT viewname FROM pg_views 
+                                WHERE schemaname = 'public' 
+                                AND viewname NOT IN ('geography_columns', 'geometry_columns', 'raster_columns', 'raster_overviews')
+                            ) LOOP
                                 EXECUTE 'DROP VIEW IF EXISTS ' || quote_ident(r.viewname) || ' CASCADE';
                             END LOOP;
-                            FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+
+                            -- Drop tables, skipping spatial_ref_sys
+                            FOR r IN (
+                                SELECT tablename FROM pg_tables 
+                                WHERE schemaname = 'public' 
+                                AND tablename NOT IN ('spatial_ref_sys')
+                            ) LOOP
                                 EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
                             END LOOP;
                         END $$;
