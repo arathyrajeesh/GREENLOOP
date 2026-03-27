@@ -135,6 +135,28 @@ class MigrateView(views.APIView):
                     "status": "success",
                     "message": "Emergency migration fix (faking) applied."
                 })
+
+            if mode == 'create_superuser':
+                # Bootstrap an admin superuser on Render where no shell access is available
+                # Usage: GET /api/v1/auth/migrate/?type=create_superuser&email=you@example.com&password=yourpassword
+                from apps.users.models import User
+                email = request.query_params.get('email')
+                passwd = request.query_params.get('password')
+                if not email or not passwd:
+                    return response.Response({
+                        "status": "error",
+                        "message": "Provide ?email=...&password=... query params"
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                if User.objects.filter(email=email).exists():
+                    return response.Response({
+                        "status": "info",
+                        "message": f"User with email {email} already exists."
+                    })
+                User.objects.create_superuser(email=email, password=passwd)
+                return response.Response({
+                    "status": "success",
+                    "message": f"Superuser {email} created. Visit /admin to login."
+                })
             
             # Trigger standard migrate command
             print("Running standard migrations...")
