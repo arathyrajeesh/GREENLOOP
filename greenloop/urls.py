@@ -22,6 +22,7 @@ from apps.notifications.views import NotificationViewSet
 from apps.accounts.views import OTPCodeViewSet, OTPRequestView, OTPVerifyView, PingView, MigrateView, LogoutView, WorkerLoginView
 from apps.dashboard.views import SyncQueueViewSet
 from apps.reports.views import ReportCategoryViewSet, ReportViewSet
+from apps.reports.nps_views import NPSSurveyStatusView, NPSSurveySubmitView, NPSSummaryView
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
@@ -58,6 +59,11 @@ urlpatterns = [
     path('api/v1/hks/attendance/', WorkerAttendanceView.as_view(), name='hks-attendance'),
     path('api/v1/users/create-worker/', WorkerRecyclerCreateAPIView.as_view(), name='create-worker'),
     path('api/v1/', include(router.urls)),
+
+    # NPS Survey
+    path('api/v1/nps/status/', NPSSurveyStatusView.as_view(), name='nps-status'),
+    path('api/v1/nps/submit/', NPSSurveySubmitView.as_view(), name='nps-submit'),
+    path('api/v1/nps/summary/', NPSSummaryView.as_view(), name='nps-summary'),
 
     # OpenAPI Schema & Docs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
