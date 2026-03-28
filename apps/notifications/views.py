@@ -1,7 +1,9 @@
 from rest_framework import viewsets, permissions
+from drf_spectacular.utils import extend_schema
 from .models import Notification
 from .serializers import NotificationSerializer
 
+@extend_schema(tags=['Shared', 'Notifications'])
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
     permission_classes = [permissions.IsAuthenticated]

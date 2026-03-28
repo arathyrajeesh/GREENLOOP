@@ -10,6 +10,10 @@ def send_resend_email(to_email: str, subject: str, html_content: str) -> bool:
     Sends an email using the Resend API via HTTP POST.
     Completely bypasses Django's SMTP backend to avoid Render port blocking.
     """
+    if to_email.endswith("@loadtest.com"):
+        logger.info(f"Bypassing email for load test user: {to_email}")
+        return True
+
     api_key = getattr(settings, 'RESEND_API_KEY', os.getenv('RESEND_API_KEY'))
     if not api_key:
         logger.error("RESEND_API_KEY is not configured.")

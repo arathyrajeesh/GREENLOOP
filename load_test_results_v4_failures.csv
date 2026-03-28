@@ -1,0 +1,11 @@
+Method,Name,Error,Occurrences
+WebSocket,Connect,"ConnectionResetError(104, 'Connection reset by peer')",34
+GET,/api/v1/attendance/history/,HTTPError('500 Server Error: Internal Server Error for url: /api/v1/attendance/history/'),1
+GET,/api/v1/attendance/history/,HTTPError('404 Client Error: Not Found for url: /api/v1/attendance/history/'),588
+GET,/api/v1/pickups/,HTTPError('500 Server Error: Internal Server Error for url: /api/v1/pickups/'),10
+POST,/api/v1/auth/worker-login/,HTTPError('500 Server Error: Internal Server Error for url: /api/v1/auth/worker-login/'),5
+WebSocket,Connect,WebSocketBadStatusException('Handshake status 403 Access denied -+-+- {} -+-+- None'),7
+POST,/api/v1/auth/otp-request/,HTTPError('404 Client Error: Not Found for url: /api/v1/auth/otp-request/'),250
+WebSocket,LocationUpdate,"ConnectionResetError(104, 'Connection reset by peer')",21
+WebSocket,LocationUpdate,"BrokenPipeError(32, 'Broken pipe')",159
+WebSocket,Connect,WebSocketTimeoutException('Connection timed out'),134

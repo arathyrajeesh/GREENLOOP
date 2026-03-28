@@ -1,1 +1,8 @@
 -r base.txt
+pytest-django
+pytest-cov
+pytest-celery
+factory-boy
+pytest-mock
+locust
+websocket-client

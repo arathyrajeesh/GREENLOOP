@@ -3,9 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Sum, Count
+from drf_spectacular.utils import extend_schema
 from .models import FeeCollection
 from .serializers import FeeCollectionSerializer
 
+@extend_schema(tags=['Resident', 'HKS Worker', 'Admin'])
 class FeeCollectionViewSet(viewsets.ModelViewSet):
     serializer_class = FeeCollectionSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -22,9 +24,11 @@ class FeeCollectionViewSet(viewsets.ModelViewSet):
             return FeeCollection.objects.filter(resident=user)
         return FeeCollection.objects.all()
 
+    @extend_schema(tags=['HKS Worker'])
     def perform_create(self, serializer):
         serializer.save(collected_by=self.request.user)
 
+    @extend_schema(tags=['HKS Worker'])
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """

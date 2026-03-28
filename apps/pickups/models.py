@@ -75,12 +75,14 @@ class Pickup(models.Model):
         
         # Trigger notifications after save
         from apps.notifications.tasks import notify_resident_pickup_assigned, notify_resident_pickup_complete
+        from apps.rewards.tasks import award_greenleaf_points
         
         if self.status == 'accepted' and old_status != 'accepted':
             notify_resident_pickup_assigned.delay(self.id)
             
         if self.status == 'completed' and old_status != 'completed':
             notify_resident_pickup_complete.delay(self.id)
+            award_greenleaf_points.delay(self.id)
 
     class Meta:
         indexes = [

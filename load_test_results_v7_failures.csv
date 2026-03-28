@@ -1,0 +1,8 @@
+Method,Name,Error,Occurrences
+WebSocket,Connect,"ConnectionResetError(104, 'Connection reset by peer')",2
+POST,/api/v1/auth/otp/request/,"ConnectionRefusedError(111, 'Connection refused')",50
+POST,/api/v1/auth/worker-login/,"ConnectionRefusedError(111, 'Connection refused')",50
+POST,/api/v1/auth/otp/verify/,HTTPError('400 Client Error: Bad Request for url: /api/v1/auth/otp/verify/'),25
+WebSocket,LocationUpdate,"ConnectionResetError(104, 'Connection reset by peer')",22
+WebSocket,LocationUpdate,"BrokenPipeError(32, 'Broken pipe')",27
+WebSocket,Connect,WebSocketTimeoutException('Connection timed out'),123

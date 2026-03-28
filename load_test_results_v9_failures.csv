@@ -1,0 +1,6 @@
+Method,Name,Error,Occurrences
+POST,/api/v1/auth/otp/request/,"ConnectionRefusedError(111, 'Connection refused')",85
+POST,/api/v1/auth/worker-login/,"ConnectionRefusedError(111, 'Connection refused')",85
+POST,/api/v1/auth/otp/verify/,HTTPError('400 Client Error: Bad Request for url: /api/v1/auth/otp/verify/'),22
+WebSocket,LocationUpdate,"ConnectionResetError(104, 'Connection reset by peer')",37
+WebSocket,LocationUpdate,"BrokenPipeError(32, 'Broken pipe')",60

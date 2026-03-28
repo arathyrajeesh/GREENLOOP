@@ -1,12 +1,14 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from django.db import models
 from django.utils import timezone
 from .models import Complaint
 from .serializers import ComplaintSerializer, ComplaintHeatmapSerializer
 from apps.notifications.tasks import notify_admin_new_complaint
 
+@extend_schema(tags=['Resident', 'HKS Worker', 'Admin'])
 class ComplaintViewSet(viewsets.ModelViewSet):
     serializer_class = ComplaintSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -21,17 +23,18 @@ class ComplaintViewSet(viewsets.ModelViewSet):
             
         if user.role in ['ADMIN', 'HKS_WORKER']:
             if user.role == 'ADMIN':
-                queryset = Complaint.objects.all()
+                queryset = Complaint.objects.select_related('reporter', 'assigned_to').all()
             else:
                 # Workers see assigned or reported
-                queryset = Complaint.objects.filter(models.Q(assigned_to=user) | models.Q(reporter=user))
+                queryset = Complaint.objects.select_related('reporter', 'assigned_to').filter(models.Q(assigned_to=user) | models.Q(reporter=user))
         else:
             # Residents see their own
-            queryset = Complaint.objects.filter(reporter=user)
+            queryset = Complaint.objects.select_related('reporter', 'assigned_to').filter(reporter=user)
             
         # Acceptance Criteria: sorted by priority (Highest=4 first) and age (Oldest=ASC first)
         return queryset.order_by('-priority', 'created_at')
 
+    @extend_schema(tags=['Resident'])
     def perform_create(self, serializer):
         complaint = serializer.save(reporter=self.request.user, status='submitted')
         notify_admin_new_complaint.delay(complaint.id)
@@ -55,6 +58,7 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         complaint.save()
         return Response(ComplaintSerializer(complaint).data)
 
+    @extend_schema(tags=['HKS Worker'])
     @action(detail=True, methods=['post'])
     def advance_status(self, request, pk=None):
         """Advances the complaint through its lifecycle."""
@@ -83,6 +87,7 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         complaint.save()
         return Response(ComplaintSerializer(complaint).data)
 
+    @extend_schema(tags=['Admin', 'Heatmap'])
     @action(detail=False, methods=['get'])
     def heatmap(self, request):
         """Identifies complaint hotspots using PostGIS KMeans clustering."""

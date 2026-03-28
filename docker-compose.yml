@@ -3,6 +3,7 @@ version: '3.9'
 services:
   db:
     image: postgis/postgis:15-3.3
+    command: postgres -c max_connections=600
     container_name: greenloop_postgres
     environment:
       POSTGRES_USER: postgres
@@ -22,7 +23,7 @@ services:
   django:
     build: .
     container_name: greenloop_django
-    command: gunicorn --workers 3 --timeout 120 --reload greenloop.wsgi:application --bind 0.0.0.0:8000
+    command: gunicorn greenloop.asgi:application --bind 0.0.0.0:8000 --workers 4 -k uvicorn.workers.UvicornWorker --timeout 120 --reload
     volumes:
       - .:/app
     ports:
@@ -80,6 +81,21 @@ services:
       - db
       - redis
       - celery_worker
+
+  locust:
+    build: .
+    container_name: greenloop_locust
+    command: locust -f locustfile.py --host http://daphne:8001
+    volumes:
+      - .:/app
+    ports:
+      - "8089:8089"
+    environment:
+      - DJANGO_SETTINGS_MODULE=greenloop.settings.development
+    depends_on:
+      - django
+      - daphne
+      - redis
 
 volumes:
   postgres_data:

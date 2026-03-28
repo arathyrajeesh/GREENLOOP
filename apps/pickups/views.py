@@ -1,12 +1,14 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from django.utils import timezone
 from datetime import timedelta
 from apps.pickups.models import Pickup, PickupVerification
 from apps.pickups.serializers import PickupSerializer
 from apps.pickups.serializers_verification import PickupVerificationSerializer
 
+@extend_schema(tags=['Resident', 'HKS Worker'])
 class PickupViewSet(viewsets.ModelViewSet):
     serializer_class = PickupSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -14,19 +16,32 @@ class PickupViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if getattr(user, 'role', '') == 'RESIDENT':
-            return Pickup.objects.filter(resident=user)
+            return Pickup.objects.select_related('resident', 'ward').filter(resident=user)
         elif getattr(user, 'role', '') == 'HKS_WORKER':
             if user.ward:
-                return Pickup.objects.filter(ward=user.ward)
+                return Pickup.objects.select_related('resident', 'ward').filter(ward=user.ward)
             return Pickup.objects.none()
         elif getattr(user, 'role', '') == 'ADMIN':
             ward_id = self.request.query_params.get('ward_id')
+            queryset = Pickup.objects.select_related('resident', 'ward')
             if ward_id:
-                return Pickup.objects.filter(ward_id=ward_id)
-            return Pickup.objects.all()
+                return queryset.filter(ward_id=ward_id)
+            return queryset.all()
         return Pickup.objects.none()
 
+    @extend_schema(tags=['Resident'])
     def perform_create(self, serializer):
+        user = self.request.user
+        save_kwargs = {}
+        if getattr(user, 'role', '') == 'RESIDENT':
+            save_kwargs['resident'] = user
+            if user.ward and not serializer.validated_data.get('ward'):
+                save_kwargs['ward'] = user.ward
+        serializer.save(**save_kwargs)
+
+    @extend_schema(tags=['Resident'])
+    @extend_schema(tags=['HKS Worker'])
+    def perform_update(self, serializer):
         user = self.request.user
         save_kwargs = {}
         if getattr(user, 'role', '') == 'RESIDENT':
@@ -156,13 +171,8 @@ class PickupViewSet(viewsets.ModelViewSet):
                 
         pickup.save()  # completed_at is set in model's save() method
         
-        # Trigger Celery Tasks asynchronously
-        from apps.rewards.tasks import award_greenleaf_points
-        from apps.notifications.tasks import notify_resident_pickup_complete
+        # Celery Tasks are triggered in model save()
         from apps.pickups.tasks import flag_pickup_for_review
-        
-        award_greenleaf_points.delay(pickup.id)
-        notify_resident_pickup_complete.delay(pickup.id)
         
         if requires_admin_review:
             flag_pickup_for_review.delay(pickup.id)
@@ -178,7 +188,8 @@ class PickupViewSet(viewsets.ModelViewSet):
             "message": "Fee collection required for weight > 50kg" if payment_required else "Pickup completed"
         })
 
-class PickupVerificationViewSet(viewsets.ModelViewSet):
+@extend_schema(tags=['HKS Worker'])
+class PickupVerificationViewSet(viewsets.GenericViewSet):
     queryset = PickupVerification.objects.all()
     serializer_class = PickupVerificationSerializer
     permission_classes = [permissions.IsAuthenticated]

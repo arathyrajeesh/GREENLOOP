@@ -1,0 +1,4955 @@
+openapi: 3.0.3
+info:
+  title: GreenLoop API
+  version: 1.0.0
+  description: GreenLoop Backend Architecture
+paths:
+  /api/v1/attendance/:
+    get:
+      operationId: v1_attendance_list
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLogList'
+          description: ''
+    post:
+      operationId: v1_attendance_create
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceLogRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLog'
+          description: ''
+  /api/v1/attendance/{id}/:
+    get:
+      operationId: v1_attendance_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attendance Log.
+        required: true
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLog'
+          description: ''
+    put:
+      operationId: v1_attendance_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attendance Log.
+        required: true
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AttendanceLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttendanceLogRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLog'
+          description: ''
+    patch:
+      operationId: v1_attendance_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attendance Log.
+        required: true
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceLogRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceLogRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAttendanceLogRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLog'
+          description: ''
+    delete:
+      operationId: v1_attendance_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Attendance Log.
+        required: true
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/logout/:
+    post:
+      operationId: v1_auth_logout_create
+      description: Blacklist the refresh token to logout the user.
+      tags:
+      - Auth
+      - Shared
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+          description: ''
+  /api/v1/auth/migrate/:
+    get:
+      operationId: v1_auth_migrate_retrieve
+      description: Emergency view to trigger migrations manually if entrypoint.sh
+        is bypassed.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+          description: ''
+  /api/v1/auth/otp/request/:
+    post:
+      operationId: v1_auth_otp_request_create
+      tags:
+      - Resident
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+          description: ''
+  /api/v1/auth/otp/verify/:
+    post:
+      operationId: v1_auth_otp_verify_create
+      tags:
+      - Resident
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPVerifyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPVerifyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPVerifyRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+          description: ''
+  /api/v1/auth/ping/:
+    get:
+      operationId: v1_auth_ping_retrieve
+      description: Diagnostic view to check database and model health in production.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+          description: ''
+  /api/v1/auth/token/:
+    post:
+      operationId: v1_auth_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: v1_auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/worker-login/:
+    post:
+      operationId: v1_auth_worker_login_create
+      tags:
+      - HKS Worker
+      - Admin
+      - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkerLoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkerLoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkerLoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+          description: ''
+  /api/v1/complaints/:
+    get:
+      operationId: v1_complaints_list
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplaintList'
+          description: ''
+    post:
+      operationId: v1_complaints_create
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complaint'
+          description: ''
+  /api/v1/complaints/{id}/:
+    get:
+      operationId: v1_complaints_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Complaint.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complaint'
+          description: ''
+    put:
+      operationId: v1_complaints_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Complaint.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complaint'
+          description: ''
+    patch:
+      operationId: v1_complaints_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Complaint.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedComplaintRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedComplaintRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedComplaintRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complaint'
+          description: ''
+    delete:
+      operationId: v1_complaints_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Complaint.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/complaints/{id}/advance_status/:
+    post:
+      operationId: v1_complaints_advance_status_create
+      description: Advances the complaint through its lifecycle.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Complaint.
+        required: true
+      tags:
+      - HKS Worker
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complaint'
+          description: ''
+  /api/v1/complaints/{id}/assign/:
+    post:
+      operationId: v1_complaints_assign_create
+      description: Allows admins to assign a complaint to a worker.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Complaint.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ComplaintRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complaint'
+          description: ''
+  /api/v1/complaints/heatmap/:
+    get:
+      operationId: v1_complaints_heatmap_retrieve
+      description: Identifies complaint hotspots using PostGIS KMeans clustering.
+      tags:
+      - Admin
+      - Heatmap
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complaint'
+          description: ''
+  /api/v1/hks/attendance/:
+    get:
+      operationId: v1_hks_attendance_list
+      description: |-
+        Handles Check-In (POST), Check-Out (PATCH), and History (GET) for HKS Workers,
+        featuring secure GPS boundary validation and PPE verification.
+      tags:
+      - HKS Worker
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLogList'
+          description: ''
+    post:
+      operationId: v1_hks_attendance_create
+      description: |-
+        Handles Check-In (POST), Check-Out (PATCH), and History (GET) for HKS Workers,
+        featuring secure GPS boundary validation and PPE verification.
+      tags:
+      - HKS Worker
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLog'
+          description: ''
+    patch:
+      operationId: v1_hks_attendance_partial_update
+      description: |-
+        Handles Check-In (POST), Check-Out (PATCH), and History (GET) for HKS Workers,
+        featuring secure GPS boundary validation and PPE verification.
+      tags:
+      - HKS Worker
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttendanceLog'
+          description: ''
+  /api/v1/hks/routes/today/:
+    get:
+      operationId: v1_hks_routes_today_retrieve
+      description: Retrieves the route and ordered pickups for the authenticated HKS
+        Worker for today.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/material-types/:
+    get:
+      operationId: v1_material_types_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaterialType'
+          description: ''
+    post:
+      operationId: v1_material_types_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaterialTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaterialTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialType'
+          description: ''
+  /api/v1/material-types/{id}/:
+    get:
+      operationId: v1_material_types_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Material Type.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialType'
+          description: ''
+    put:
+      operationId: v1_material_types_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Material Type.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MaterialTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MaterialTypeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialType'
+          description: ''
+    patch:
+      operationId: v1_material_types_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Material Type.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMaterialTypeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMaterialTypeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMaterialTypeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialType'
+          description: ''
+    delete:
+      operationId: v1_material_types_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Material Type.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/:
+    get:
+      operationId: v1_notifications_list
+      tags:
+      - Shared
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+          description: ''
+    post:
+      operationId: v1_notifications_create
+      tags:
+      - Shared
+      - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/notifications/{id}/:
+    get:
+      operationId: v1_notifications_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Notification.
+        required: true
+      tags:
+      - Shared
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    put:
+      operationId: v1_notifications_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Notification.
+        required: true
+      tags:
+      - Shared
+      - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    patch:
+      operationId: v1_notifications_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Notification.
+        required: true
+      tags:
+      - Shared
+      - Notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+    delete:
+      operationId: v1_notifications_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Notification.
+        required: true
+      tags:
+      - Shared
+      - Notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/otp-codes/:
+    get:
+      operationId: v1_otp_codes_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OTPCode'
+          description: ''
+    post:
+      operationId: v1_otp_codes_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPCodeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPCodeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPCodeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPCode'
+          description: ''
+  /api/v1/otp-codes/{id}/:
+    get:
+      operationId: v1_otp_codes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this OTP Code.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPCode'
+          description: ''
+    put:
+      operationId: v1_otp_codes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this OTP Code.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OTPCodeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OTPCodeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OTPCodeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPCode'
+          description: ''
+    patch:
+      operationId: v1_otp_codes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this OTP Code.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOTPCodeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOTPCodeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOTPCodeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OTPCode'
+          description: ''
+    delete:
+      operationId: v1_otp_codes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this OTP Code.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payments/:
+    get:
+      operationId: v1_payments_list
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeeCollection'
+          description: ''
+    post:
+      operationId: v1_payments_create
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeCollectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeeCollectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeeCollectionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeCollection'
+          description: ''
+  /api/v1/payments/{id}/:
+    get:
+      operationId: v1_payments_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fee Collection.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeCollection'
+          description: ''
+    put:
+      operationId: v1_payments_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fee Collection.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeeCollectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeeCollectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeeCollectionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeCollection'
+          description: ''
+    patch:
+      operationId: v1_payments_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fee Collection.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeCollectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeCollectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFeeCollectionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeCollection'
+          description: ''
+    delete:
+      operationId: v1_payments_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fee Collection.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/payments/summary/:
+    get:
+      operationId: v1_payments_summary_retrieve
+      description: Daily summary of fee collections for the authenticated worker.
+      tags:
+      - HKS Worker
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeeCollection'
+          description: ''
+  /api/v1/pickups/:
+    get:
+      operationId: v1_pickups_list
+      tags:
+      - Resident
+      - HKS Worker
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PickupList'
+          description: ''
+    post:
+      operationId: v1_pickups_create
+      tags:
+      - Resident
+      - HKS Worker
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+          description: ''
+  /api/v1/pickups/{id}/:
+    get:
+      operationId: v1_pickups_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this pickup.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+          description: ''
+    put:
+      operationId: v1_pickups_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this pickup.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+          description: ''
+    patch:
+      operationId: v1_pickups_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this pickup.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+          description: ''
+    delete:
+      operationId: v1_pickups_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this pickup.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/pickups/{id}/cancel/:
+    patch:
+      operationId: v1_pickups_cancel_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this pickup.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+          description: ''
+  /api/v1/pickups/{id}/complete/:
+    patch:
+      operationId: v1_pickups_complete_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this pickup.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPickupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+          description: ''
+  /api/v1/pickups/{id}/verify_scan/:
+    post:
+      operationId: v1_pickups_verify_scan_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this pickup.
+        required: true
+      tags:
+      - Resident
+      - HKS Worker
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PickupRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pickup'
+          description: ''
+  /api/v1/recycler-purchases/:
+    get:
+      operationId: v1_recycler_purchases_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecyclerPurchase'
+          description: ''
+    post:
+      operationId: v1_recycler_purchases_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecyclerPurchaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecyclerPurchaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecyclerPurchaseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclerPurchase'
+          description: ''
+  /api/v1/recycler-purchases/{id}/:
+    get:
+      operationId: v1_recycler_purchases_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycler Purchase.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclerPurchase'
+          description: ''
+    put:
+      operationId: v1_recycler_purchases_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycler Purchase.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecyclerPurchaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecyclerPurchaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecyclerPurchaseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclerPurchase'
+          description: ''
+    patch:
+      operationId: v1_recycler_purchases_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycler Purchase.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRecyclerPurchaseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRecyclerPurchaseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRecyclerPurchaseRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclerPurchase'
+          description: ''
+    delete:
+      operationId: v1_recycler_purchases_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycler Purchase.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/recycling-certificates/:
+    get:
+      operationId: v1_recycling_certificates_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecyclingCertificate'
+          description: ''
+    post:
+      operationId: v1_recycling_certificates_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecyclingCertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecyclingCertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecyclingCertificateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclingCertificate'
+          description: ''
+  /api/v1/recycling-certificates/{id}/:
+    get:
+      operationId: v1_recycling_certificates_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycling Certificate.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclingCertificate'
+          description: ''
+    put:
+      operationId: v1_recycling_certificates_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycling Certificate.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecyclingCertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecyclingCertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecyclingCertificateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclingCertificate'
+          description: ''
+    patch:
+      operationId: v1_recycling_certificates_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycling Certificate.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRecyclingCertificateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRecyclingCertificateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRecyclingCertificateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecyclingCertificate'
+          description: ''
+    delete:
+      operationId: v1_recycling_certificates_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Recycling Certificate.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/report-categories/:
+    get:
+      operationId: v1_report_categories_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportCategory'
+          description: ''
+  /api/v1/report-categories/{id}/:
+    get:
+      operationId: v1_report_categories_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Report Category.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCategory'
+          description: ''
+  /api/v1/reports/:
+    get:
+      operationId: v1_reports_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report'
+          description: ''
+    post:
+      operationId: v1_reports_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+  /api/v1/reports/{id}/:
+    get:
+      operationId: v1_reports_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Report.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+    put:
+      operationId: v1_reports_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Report.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+    patch:
+      operationId: v1_reports_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Report.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReportRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReportRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReportRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+          description: ''
+    delete:
+      operationId: v1_reports_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Report.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/reward-redemptions/:
+    get:
+      operationId: v1_reward_redemptions_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RewardRedemption'
+          description: ''
+    post:
+      operationId: v1_reward_redemptions_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RewardRedemptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RewardRedemptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RewardRedemptionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardRedemption'
+          description: ''
+  /api/v1/reward-redemptions/{id}/:
+    get:
+      operationId: v1_reward_redemptions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward Redemption.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardRedemption'
+          description: ''
+    put:
+      operationId: v1_reward_redemptions_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward Redemption.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RewardRedemptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RewardRedemptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RewardRedemptionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardRedemption'
+          description: ''
+    patch:
+      operationId: v1_reward_redemptions_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward Redemption.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardRedemptionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardRedemptionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardRedemptionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RewardRedemption'
+          description: ''
+    delete:
+      operationId: v1_reward_redemptions_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward Redemption.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/rewards/:
+    get:
+      operationId: v1_rewards_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reward'
+          description: ''
+    post:
+      operationId: v1_rewards_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RewardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RewardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RewardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reward'
+          description: ''
+  /api/v1/rewards/{id}/:
+    get:
+      operationId: v1_rewards_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reward'
+          description: ''
+    put:
+      operationId: v1_rewards_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RewardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RewardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RewardRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reward'
+          description: ''
+    patch:
+      operationId: v1_rewards_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRewardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reward'
+          description: ''
+    delete:
+      operationId: v1_rewards_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Reward.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/routes/:
+    get:
+      operationId: v1_routes_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteList'
+          description: ''
+    post:
+      operationId: v1_routes_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+  /api/v1/routes/{id}/:
+    get:
+      operationId: v1_routes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    put:
+      operationId: v1_routes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RouteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    patch:
+      operationId: v1_routes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRouteRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+          description: ''
+    delete:
+      operationId: v1_routes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this route.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/sync/:
+    get:
+      operationId: v1_sync_list
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyncQueue'
+          description: ''
+    post:
+      operationId: v1_sync_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncQueue'
+          description: ''
+  /api/v1/sync/{id}/:
+    get:
+      operationId: v1_sync_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sync Queue Item.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncQueue'
+          description: ''
+    put:
+      operationId: v1_sync_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sync Queue Item.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncQueue'
+          description: ''
+    patch:
+      operationId: v1_sync_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sync Queue Item.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSyncQueueRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSyncQueueRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSyncQueueRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncQueue'
+          description: ''
+    delete:
+      operationId: v1_sync_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sync Queue Item.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/sync/active_locations/:
+    get:
+      operationId: v1_sync_active_locations_retrieve
+      description: |-
+        Returns latest GPS positions for all active workers from Redis.
+        Admin-only endpoint for live map fallback.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncQueue'
+          description: ''
+  /api/v1/sync/prefetch/:
+    get:
+      operationId: v1_sync_prefetch_retrieve
+      description: |-
+        Returns all data required for the HKS worker's today's route.
+        Includes: Route, Pickups, and Ward data.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncQueue'
+          description: ''
+  /api/v1/sync/upload/:
+    post:
+      operationId: v1_sync_upload_create
+      description: |-
+        Processes batched offline mutations chronologically with conflict detection.
+        Expects a list of sync items with client_id and client_timestamp.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SyncQueueRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncQueue'
+          description: ''
+  /api/v1/users/:
+    get:
+      operationId: v1_users_list
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: v1_users_create
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/{id}/:
+    get:
+      operationId: v1_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: v1_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: v1_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: v1_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users/create-worker/:
+    post:
+      operationId: v1_users_create_worker_create
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkerRecyclerCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WorkerRecyclerCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WorkerRecyclerCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/wards/:
+    get:
+      operationId: v1_wards_list
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WardList'
+          description: ''
+    post:
+      operationId: v1_wards_create
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+  /api/v1/wards/{id}/:
+    get:
+      operationId: v1_wards_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+    put:
+      operationId: v1_wards_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+    patch:
+      operationId: v1_wards_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+    delete:
+      operationId: v1_wards_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/wards/{id}/assign_workers/:
+    post:
+      operationId: v1_wards_assign_workers_create
+      description: Batch assign/unassign HKS workers to this ward.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+  /api/v1/wards/{id}/workers/:
+    get:
+      operationId: v1_wards_workers_retrieve
+      description: List all HKS workers currently assigned to this ward.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this ward.
+        required: true
+      tags:
+      - Admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ward'
+          description: ''
+components:
+  schemas:
+    ActionEnum:
+      enum:
+      - CREATE
+      - UPDATE
+      - DELETE
+      type: string
+      description: |-
+        * `CREATE` - Create
+        * `UPDATE` - Update
+        * `DELETE` - Delete
+    AttendanceLog:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        id:
+          type: integer
+          readOnly: true
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+            check_in:
+              type: string
+              format: time
+              nullable: true
+            check_out:
+              type: string
+              format: time
+              nullable: true
+            has_gloves:
+              type: boolean
+            has_mask:
+              type: boolean
+            has_vest:
+              type: boolean
+            has_boots:
+              type: boolean
+            ppe_selfie:
+              type: string
+              format: uri
+              nullable: true
+            ppe_photo_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Verifiable remote URL for PPE selfie
+              maxLength: 500
+            status:
+              enum:
+              - PRESENT
+              - ABSENT
+              - LEAVE
+              type: string
+              description: |-
+                * `PRESENT` - Present
+                * `ABSENT` - Absent
+                * `LEAVE` - Leave
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+            worker:
+              type: string
+              format: uuid
+    AttendanceLogList:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureCollectionEnum'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceLog'
+    AttendanceLogRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+            check_in:
+              type: string
+              format: time
+              nullable: true
+            check_out:
+              type: string
+              format: time
+              nullable: true
+            has_gloves:
+              type: boolean
+            has_mask:
+              type: boolean
+            has_vest:
+              type: boolean
+            has_boots:
+              type: boolean
+            ppe_selfie:
+              type: string
+              format: binary
+              nullable: true
+            ppe_photo_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Verifiable remote URL for PPE selfie
+              maxLength: 500
+            status:
+              enum:
+              - PRESENT
+              - ABSENT
+              - LEAVE
+              type: string
+              description: |-
+                * `PRESENT` - Present
+                * `ABSENT` - Absent
+                * `LEAVE` - Leave
+            worker:
+              type: string
+              format: uuid
+    BaseResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    Complaint:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        id:
+          type: integer
+          readOnly: true
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            reporter:
+              type: string
+              format: uuid
+              readOnly: true
+            category:
+              enum:
+              - PICKUP
+              - CLEANLINESS
+              - BEHAVIOR
+              - PAYMENT
+              - OVERFLOW
+              - BLOCKED
+              - UNAVAILABLE
+              - OTHER
+              type: string
+              description: |-
+                * `PICKUP` - Missed Pickup
+                * `CLEANLINESS` - Lack of Cleanliness
+                * `BEHAVIOR` - Staff Behavior
+                * `PAYMENT` - Payment Issue
+                * `OVERFLOW` - Overflowing Bins
+                * `BLOCKED` - Access Blocked
+                * `UNAVAILABLE` - Resident Unavailable
+                * `OTHER` - Other
+            priority:
+              enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              type: integer
+              description: |-
+                * `1` - Low
+                * `2` - Medium
+                * `3` - High
+                * `4` - Urgent
+              minimum: -2147483648
+              maximum: 2147483647
+            description:
+              type: string
+            image:
+              type: string
+              format: uri
+              nullable: true
+            assigned_to:
+              type: string
+              format: uuid
+              nullable: true
+            status:
+              enum:
+              - submitted
+              - assigned
+              - in-progress
+              - resolved
+              - closed
+              type: string
+              description: |-
+                * `submitted` - Submitted
+                * `assigned` - Assigned
+                * `in-progress` - In Progress
+                * `resolved` - Resolved
+                * `closed` - Closed
+              readOnly: true
+            is_escalated:
+              type: boolean
+              readOnly: true
+            resolved_at:
+              type: string
+              format: date-time
+              readOnly: true
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+            updated_at:
+              type: string
+              format: date-time
+              readOnly: true
+    ComplaintList:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureCollectionEnum'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Complaint'
+    ComplaintRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            category:
+              enum:
+              - PICKUP
+              - CLEANLINESS
+              - BEHAVIOR
+              - PAYMENT
+              - OVERFLOW
+              - BLOCKED
+              - UNAVAILABLE
+              - OTHER
+              type: string
+              description: |-
+                * `PICKUP` - Missed Pickup
+                * `CLEANLINESS` - Lack of Cleanliness
+                * `BEHAVIOR` - Staff Behavior
+                * `PAYMENT` - Payment Issue
+                * `OVERFLOW` - Overflowing Bins
+                * `BLOCKED` - Access Blocked
+                * `UNAVAILABLE` - Resident Unavailable
+                * `OTHER` - Other
+            priority:
+              enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              type: integer
+              description: |-
+                * `1` - Low
+                * `2` - Medium
+                * `3` - High
+                * `4` - Urgent
+              minimum: -2147483648
+              maximum: 2147483647
+            description:
+              type: string
+              minLength: 1
+            image:
+              type: string
+              format: binary
+              nullable: true
+            assigned_to:
+              type: string
+              format: uuid
+              nullable: true
+    FeeCollection:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        receipt_number:
+          type: string
+          readOnly: true
+        payment_date:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        resident:
+          type: string
+          format: uuid
+        ward:
+          type: integer
+          nullable: true
+        collected_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - amount
+      - collected_by
+      - created_at
+      - id
+      - payment_date
+      - receipt_number
+      - resident
+      - updated_at
+    FeeCollectionRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        resident:
+          type: string
+          format: uuid
+        ward:
+          type: integer
+          nullable: true
+      required:
+      - amount
+      - resident
+    GisFeatureCollectionEnum:
+      type: string
+      enum:
+      - FeatureCollection
+    GisFeatureEnum:
+      type: string
+      enum:
+      - Feature
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    MaterialType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        unit:
+          type: string
+          maxLength: 20
+        price_per_unit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        description:
+          type: string
+      required:
+      - id
+      - name
+      - price_per_unit
+    MaterialTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 20
+        price_per_unit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        description:
+          type: string
+      required:
+      - name
+      - price_per_unit
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        message:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - message
+      - title
+      - user
+    NotificationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        message:
+          type: string
+          minLength: 1
+        is_read:
+          type: boolean
+      required:
+      - message
+      - title
+    OTPCode:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 6
+        is_used:
+          type: boolean
+          readOnly: true
+        failed_attempts:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+      required:
+      - code
+      - created_at
+      - expires_at
+      - id
+      - is_used
+      - user
+    OTPCodeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 6
+        failed_attempts:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        user:
+          type: string
+          format: uuid
+      required:
+      - code
+      - user
+    OTPRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    OTPVerifyRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        code:
+          type: string
+          minLength: 6
+          maxLength: 6
+      required:
+      - code
+      - email
+    PatchedAttendanceLogRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            date:
+              type: string
+              format: date
+            check_in:
+              type: string
+              format: time
+              nullable: true
+            check_out:
+              type: string
+              format: time
+              nullable: true
+            has_gloves:
+              type: boolean
+            has_mask:
+              type: boolean
+            has_vest:
+              type: boolean
+            has_boots:
+              type: boolean
+            ppe_selfie:
+              type: string
+              format: binary
+              nullable: true
+            ppe_photo_url:
+              type: string
+              format: uri
+              nullable: true
+              description: Verifiable remote URL for PPE selfie
+              maxLength: 500
+            status:
+              enum:
+              - PRESENT
+              - ABSENT
+              - LEAVE
+              type: string
+              description: |-
+                * `PRESENT` - Present
+                * `ABSENT` - Absent
+                * `LEAVE` - Leave
+            worker:
+              type: string
+              format: uuid
+    PatchedComplaintRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            category:
+              enum:
+              - PICKUP
+              - CLEANLINESS
+              - BEHAVIOR
+              - PAYMENT
+              - OVERFLOW
+              - BLOCKED
+              - UNAVAILABLE
+              - OTHER
+              type: string
+              description: |-
+                * `PICKUP` - Missed Pickup
+                * `CLEANLINESS` - Lack of Cleanliness
+                * `BEHAVIOR` - Staff Behavior
+                * `PAYMENT` - Payment Issue
+                * `OVERFLOW` - Overflowing Bins
+                * `BLOCKED` - Access Blocked
+                * `UNAVAILABLE` - Resident Unavailable
+                * `OTHER` - Other
+            priority:
+              enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              type: integer
+              description: |-
+                * `1` - Low
+                * `2` - Medium
+                * `3` - High
+                * `4` - Urgent
+              minimum: -2147483648
+              maximum: 2147483647
+            description:
+              type: string
+              minLength: 1
+            image:
+              type: string
+              format: binary
+              nullable: true
+            assigned_to:
+              type: string
+              format: uuid
+              nullable: true
+    PatchedFeeCollectionRequest:
+      type: object
+      properties:
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        payment_method:
+          $ref: '#/components/schemas/PaymentMethodEnum'
+        resident:
+          type: string
+          format: uuid
+        ward:
+          type: integer
+          nullable: true
+    PatchedMaterialTypeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 20
+        price_per_unit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        description:
+          type: string
+    PatchedNotificationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        message:
+          type: string
+          minLength: 1
+        is_read:
+          type: boolean
+    PatchedOTPCodeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 6
+        failed_attempts:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        user:
+          type: string
+          format: uuid
+    PatchedPickupRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            ward:
+              type: integer
+            waste_type:
+              enum:
+              - dry
+              - wet
+              - hazardous
+              - e-waste
+              - biomedical
+              type: string
+              description: |-
+                * `dry` - Dry Waste
+                * `wet` - Wet Waste
+                * `hazardous` - Hazardous Waste
+                * `e-waste` - E-Waste
+                * `biomedical` - Biomedical Waste
+            scheduled_date:
+              type: string
+              format: date
+            time_slot:
+              type: string
+              nullable: true
+              description: e.g., '10:00-12:00'
+              maxLength: 50
+    PatchedRecyclerPurchaseRequest:
+      type: object
+      properties:
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        material_type:
+          type: integer
+    PatchedRecyclingCertificateRequest:
+      type: object
+      properties:
+        metadata: {}
+        resident:
+          type: string
+          format: uuid
+    PatchedReportRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        content:
+          type: string
+          minLength: 1
+        is_public:
+          type: boolean
+        user:
+          type: string
+          format: uuid
+        category:
+          type: integer
+    PatchedRewardRedemptionRequest:
+      type: object
+      properties:
+        reward_item:
+          type: string
+          minLength: 1
+          maxLength: 255
+        points_spent:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+    PatchedRewardRequest:
+      type: object
+      properties:
+        points:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Positive for earned, negative for redeemed
+        transaction_type:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        description:
+          type: string
+          minLength: 1
+          maxLength: 255
+        resident:
+          type: string
+          format: uuid
+    PatchedRouteRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - LineString
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                  format: float
+                example:
+                - 12.9721
+                - 77.5933
+                minItems: 2
+                maxItems: 3
+              example:
+              - - 22.4707
+                - 70.0577
+              - - 12.9721
+                - 77.5933
+              minItems: 2
+        properties:
+          type: object
+          properties:
+            hks_worker:
+              type: string
+              format: uuid
+            ward:
+              type: integer
+            route_date:
+              type: string
+              format: date
+            actual_path:
+              type: object
+              description: Actual GPS track
+              example:
+                type: Point
+                coordinates:
+                - 76.2711
+                - 10.8505
+              nullable: true
+    PatchedSyncQueueRequest:
+      type: object
+      properties:
+        client_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Unique ID from the mobile app for idempotency
+        client_timestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the action occurred on the device
+        device_id:
+          type: string
+          nullable: true
+          maxLength: 255
+        model_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        object_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        payload: {}
+        is_synced:
+          type: boolean
+    PatchedUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          nullable: true
+          title: Email address
+          maxLength: 254
+        name:
+          type: string
+          minLength: 1
+          description: Supports Malayalam names
+          maxLength: 255
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        ward:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+    PatchedWardRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Polygon
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+                    format: float
+                  example:
+                  - 12.9721
+                  - 77.5933
+                  minItems: 2
+                  maxItems: 3
+                example:
+                - - 22.4707
+                  - 70.0577
+                - - 12.9721
+                  - 77.5933
+                minItems: 4
+              example:
+              - - - 0.0
+                  - 0.0
+                - - 0.0
+                  - 50.0
+                - - 50.0
+                  - 50.0
+                - - 50.0
+                  - 0.0
+                - - 0.0
+                  - 0.0
+        properties:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 100
+            number:
+              type: integer
+              maximum: 2147483647
+              minimum: 0
+            location:
+              type: object
+              description: Centroid of the ward
+              example:
+                type: Point
+                coordinates:
+                - 76.2711
+                - 10.8505
+    PaymentMethodEnum:
+      enum:
+      - CASH
+      - UPI
+      - BANK_TRANSFER
+      type: string
+      description: |-
+        * `CASH` - Cash
+        * `UPI` - UPI / Digital
+        * `BANK_TRANSFER` - Bank Transfer
+    Pickup:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            resident:
+              type: string
+              format: uuid
+              readOnly: true
+            ward:
+              type: integer
+            waste_type:
+              enum:
+              - dry
+              - wet
+              - hazardous
+              - e-waste
+              - biomedical
+              type: string
+              description: |-
+                * `dry` - Dry Waste
+                * `wet` - Wet Waste
+                * `hazardous` - Hazardous Waste
+                * `e-waste` - E-Waste
+                * `biomedical` - Biomedical Waste
+            status:
+              enum:
+              - pending
+              - accepted
+              - arrived
+              - completed
+              - cancelled
+              type: string
+              description: |-
+                * `pending` - Pending
+                * `accepted` - Accepted
+                * `arrived` - Arrived
+                * `completed` - Completed
+                * `cancelled` - Cancelled
+              readOnly: true
+            scheduled_date:
+              type: string
+              format: date
+            time_slot:
+              type: string
+              nullable: true
+              description: e.g., '10:00-12:00'
+              maxLength: 50
+            qr_code:
+              type: string
+              readOnly: true
+              nullable: true
+            completed_at:
+              type: string
+              format: date-time
+              readOnly: true
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+    PickupList:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureCollectionEnum'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pickup'
+    PickupRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Point
+            coordinates:
+              type: array
+              items:
+                type: number
+                format: float
+              example:
+              - 12.9721
+              - 77.5933
+              minItems: 2
+              maxItems: 3
+        properties:
+          type: object
+          properties:
+            ward:
+              type: integer
+            waste_type:
+              enum:
+              - dry
+              - wet
+              - hazardous
+              - e-waste
+              - biomedical
+              type: string
+              description: |-
+                * `dry` - Dry Waste
+                * `wet` - Wet Waste
+                * `hazardous` - Hazardous Waste
+                * `e-waste` - E-Waste
+                * `biomedical` - Biomedical Waste
+            scheduled_date:
+              type: string
+              format: date
+            time_slot:
+              type: string
+              nullable: true
+              description: e.g., '10:00-12:00'
+              maxLength: 50
+    RecyclerPurchase:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        total_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        purchase_date:
+          type: string
+          format: date-time
+          readOnly: true
+        recycler:
+          type: string
+          format: uuid
+          readOnly: true
+        material_type:
+          type: integer
+      required:
+      - id
+      - material_type
+      - purchase_date
+      - quantity
+      - recycler
+      - total_price
+    RecyclerPurchaseRequest:
+      type: object
+      properties:
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        material_type:
+          type: integer
+      required:
+      - material_type
+      - quantity
+    RecyclingCertificate:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        certificate_number:
+          type: string
+          readOnly: true
+        issued_at:
+          type: string
+          format: date-time
+          readOnly: true
+        metadata: {}
+        resident:
+          type: string
+          format: uuid
+        recycler:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+      - certificate_number
+      - id
+      - issued_at
+      - recycler
+      - resident
+    RecyclingCertificateRequest:
+      type: object
+      properties:
+        metadata: {}
+        resident:
+          type: string
+          format: uuid
+      required:
+      - resident
+    Report:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        content:
+          type: string
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+        category:
+          type: integer
+      required:
+      - category
+      - content
+      - created_at
+      - id
+      - title
+      - updated_at
+      - user
+    ReportCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+      required:
+      - id
+      - name
+    ReportRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        content:
+          type: string
+          minLength: 1
+        is_public:
+          type: boolean
+        user:
+          type: string
+          format: uuid
+        category:
+          type: integer
+      required:
+      - category
+      - content
+      - title
+      - user
+    Reward:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        points:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Positive for earned, negative for redeemed
+        transaction_type:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        description:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        resident:
+          type: string
+          format: uuid
+      required:
+      - created_at
+      - description
+      - id
+      - points
+      - resident
+      - transaction_type
+    RewardRedemption:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        reward_item:
+          type: string
+          maxLength: 255
+        points_spent:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        status:
+          allOf:
+          - $ref: '#/components/schemas/RewardRedemptionStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        resident:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - points_spent
+      - resident
+      - reward_item
+      - status
+      - updated_at
+    RewardRedemptionRequest:
+      type: object
+      properties:
+        reward_item:
+          type: string
+          minLength: 1
+          maxLength: 255
+        points_spent:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+      - points_spent
+      - reward_item
+    RewardRedemptionStatusEnum:
+      enum:
+      - PENDING
+      - APPROVED
+      - SHIPPED
+      - DELIVERED
+      - CANCELLED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `APPROVED` - Approved
+        * `SHIPPED` - Shipped
+        * `DELIVERED` - Delivered
+        * `CANCELLED` - Cancelled
+    RewardRequest:
+      type: object
+      properties:
+        points:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          description: Positive for earned, negative for redeemed
+        transaction_type:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        description:
+          type: string
+          minLength: 1
+          maxLength: 255
+        resident:
+          type: string
+          format: uuid
+      required:
+      - description
+      - points
+      - resident
+      - transaction_type
+    RoleEnum:
+      enum:
+      - ADMIN
+      - RESIDENT
+      - HKS_WORKER
+      - RECYCLER
+      type: string
+      description: |-
+        * `ADMIN` - Admin
+        * `RESIDENT` - Resident
+        * `HKS_WORKER` - HKS Worker
+        * `RECYCLER` - Recycler
+    Route:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        id:
+          type: integer
+          readOnly: true
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - LineString
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                  format: float
+                example:
+                - 12.9721
+                - 77.5933
+                minItems: 2
+                maxItems: 3
+              example:
+              - - 22.4707
+                - 70.0577
+              - - 12.9721
+                - 77.5933
+              minItems: 2
+        properties:
+          type: object
+          properties:
+            hks_worker:
+              type: string
+              format: uuid
+            ward:
+              type: integer
+            route_date:
+              type: string
+              format: date
+            actual_path:
+              type: object
+              description: Actual GPS track
+              example:
+                type: Point
+                coordinates:
+                - 76.2711
+                - 10.8505
+              nullable: true
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+    RouteList:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureCollectionEnum'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Route'
+    RouteRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - LineString
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                  format: float
+                example:
+                - 12.9721
+                - 77.5933
+                minItems: 2
+                maxItems: 3
+              example:
+              - - 22.4707
+                - 70.0577
+              - - 12.9721
+                - 77.5933
+              minItems: 2
+        properties:
+          type: object
+          properties:
+            hks_worker:
+              type: string
+              format: uuid
+            ward:
+              type: integer
+            route_date:
+              type: string
+              format: date
+            actual_path:
+              type: object
+              description: Actual GPS track
+              example:
+                type: Point
+                coordinates:
+                - 76.2711
+                - 10.8505
+              nullable: true
+    SyncQueue:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        client_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Unique ID from the mobile app for idempotency
+        client_timestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the action occurred on the device
+        device_id:
+          type: string
+          nullable: true
+          maxLength: 255
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SyncQueueStatusEnum'
+          readOnly: true
+        model_name:
+          type: string
+          maxLength: 100
+        object_id:
+          type: string
+          maxLength: 100
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        payload: {}
+        is_synced:
+          type: boolean
+        synced_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        conflict_reason:
+          type: string
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - action
+      - conflict_reason
+      - created_at
+      - id
+      - model_name
+      - object_id
+      - status
+      - synced_at
+      - user
+    SyncQueueRequest:
+      type: object
+      properties:
+        client_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Unique ID from the mobile app for idempotency
+        client_timestamp:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the action occurred on the device
+        device_id:
+          type: string
+          nullable: true
+          maxLength: 255
+        model_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        object_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        payload: {}
+        is_synced:
+          type: boolean
+      required:
+      - action
+      - model_name
+      - object_id
+    SyncQueueStatusEnum:
+      enum:
+      - PENDING
+      - SYNCED
+      - CONFLICT
+      - ERROR
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `SYNCED` - Synced
+        * `CONFLICT` - Conflict
+        * `ERROR` - Error
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TransactionTypeEnum:
+      enum:
+      - EARNED
+      - REDEEMED
+      type: string
+      description: |-
+        * `EARNED` - Earned
+        * `REDEEMED` - Redeemed
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          nullable: true
+          title: Email address
+          maxLength: 254
+        name:
+          type: string
+          description: Supports Malayalam names
+          maxLength: 255
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        ward:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        points_balance:
+          type: string
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - points_balance
+    UserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          nullable: true
+          title: Email address
+          maxLength: 254
+        name:
+          type: string
+          minLength: 1
+          description: Supports Malayalam names
+          maxLength: 255
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        ward:
+          type: integer
+          nullable: true
+        is_active:
+          type: boolean
+      required:
+      - name
+    Ward:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        id:
+          type: integer
+          readOnly: true
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Polygon
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+                    format: float
+                  example:
+                  - 12.9721
+                  - 77.5933
+                  minItems: 2
+                  maxItems: 3
+                example:
+                - - 22.4707
+                  - 70.0577
+                - - 12.9721
+                  - 77.5933
+                minItems: 4
+              example:
+              - - - 0.0
+                  - 0.0
+                - - 0.0
+                  - 50.0
+                - - 50.0
+                  - 50.0
+                - - 50.0
+                  - 0.0
+                - - 0.0
+                  - 0.0
+        properties:
+          type: object
+          properties:
+            name:
+              type: string
+              maxLength: 100
+            number:
+              type: integer
+              maximum: 2147483647
+              minimum: 0
+            location:
+              type: object
+              description: Centroid of the ward
+              example:
+                type: Point
+                coordinates:
+                - 76.2711
+                - 10.8505
+            created_at:
+              type: string
+              format: date-time
+              readOnly: true
+    WardList:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureCollectionEnum'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ward'
+    WardRequest:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/GisFeatureEnum'
+        geometry:
+          type: object
+          properties:
+            type:
+              type: string
+              enum:
+              - Polygon
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+                    format: float
+                  example:
+                  - 12.9721
+                  - 77.5933
+                  minItems: 2
+                  maxItems: 3
+                example:
+                - - 22.4707
+                  - 70.0577
+                - - 12.9721
+                  - 77.5933
+                minItems: 4
+              example:
+              - - - 0.0
+                  - 0.0
+                - - 0.0
+                  - 50.0
+                - - 50.0
+                  - 50.0
+                - - 50.0
+                  - 0.0
+                - - 0.0
+                  - 0.0
+        properties:
+          type: object
+          properties:
+            name:
+              type: string
+              minLength: 1
+              maxLength: 100
+            number:
+              type: integer
+              maximum: 2147483647
+              minimum: 0
+            location:
+              type: object
+              description: Centroid of the ward
+              example:
+                type: Point
+                coordinates:
+                - 76.2711
+                - 10.8505
+    WorkerLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - username
+    WorkerRecyclerCreateRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: true
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          nullable: true
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+          description: Supports Malayalam names
+          maxLength: 255
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+        ward:
+          type: integer
+          nullable: true
+      required:
+      - name
+      - password
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

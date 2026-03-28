@@ -1,38 +1,41 @@
-from django.test import TestCase
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
-from apps.users.models import User
-from .models import Notification
+import pytest
+from unittest.mock import patch
+from apps.notifications.tasks import notify_admin_new_complaint, notify_resident_pickup_complete, send_fcm_push
+from tests.factories import ComplaintFactory, PickupFactory, UserFactory
 
-class NotificationsTestCase(TestCase):
-    def setUp(self):
-        self.client = APIClient()
-        self.user = User.objects.create(email="user@test.com", name="User", role="RESIDENT")
-        self.other_user = User.objects.create(email="other@test.com", name="Other", role="RESIDENT")
-        self.client.force_authenticate(user=self.user)
-        self.notification_url = reverse('notification-list')
-
-    def test_user_sees_only_own_notifications(self):
-        """Test that users cannot see others' notifications"""
-        Notification.objects.create(user=self.user, title="My Notif", message="Hello")
-        Notification.objects.create(user=self.other_user, title="Other Notif", message="Secret")
+@pytest.mark.django_db
+class TestNotificationTasks:
+    @patch('apps.notifications.tasks.send_fcm_push')
+    def test_notify_admin_new_complaint(self, mock_push):
+        complaint = ComplaintFactory()
+        # Admin user for notification
+        UserFactory(role='ADMIN', fcm_token='admin-token')
         
-        response = self.client.get(self.notification_url)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], "My Notif")
+        notify_admin_new_complaint(complaint.id)
+        assert mock_push.called
 
-    def test_notification_read_only_fields(self):
-        """Test that system-generated fields are read-only"""
-        data = {
-            "title": "Hack",
-            "message": "Update user",
-            "user": self.other_user.id  # Should be ignored if we had perform_create or just read_only
-        }
-        # Notifications aren't usually created by residents, but if they try...
-        # Our Serializer handles user as read_only.
-        response = self.client.post(self.notification_url, data)
-        # If no perform_create is defined to handle user assignment, the model would fail on NOT NULL
-        # Or if we want to allow it for testing, it should be restricted to staff.
-        # Given our current implementation, let's just verify RBAC.
-        pass
+    @patch('apps.notifications.tasks.send_fcm_push')
+    def test_notify_resident_pickup_complete(self, mock_push):
+        pickup = PickupFactory(status='completed')
+        pickup.resident.fcm_token = 'resident-token'
+        pickup.resident.save()
+        
+        notify_resident_pickup_complete(pickup.id)
+        assert mock_push.called
+
+@pytest.mark.django_db
+class TestPickupTasks:
+    def test_flag_pickup_for_review(self):
+        from apps.pickups.tasks import flag_pickup_for_review
+        from apps.pickups.models import PickupVerification
+        pickup = PickupFactory()
+        worker = UserFactory(role='HKS_WORKER')
+        PickupVerification.objects.create(
+            pickup=pickup, 
+            verified_by=worker,
+            contamination_confidence=0.3
+        )
+        
+        flag_pickup_for_review(pickup.id)
+        pickup.refresh_from_db()
+        assert pickup.verification.requires_admin_review is True

@@ -26,7 +26,7 @@ class ComplaintsTestCase(TestCase):
         
         complaint = Complaint.objects.get(id=response.data['id'])
         self.assertEqual(complaint.reporter, self.resident)
-        self.assertEqual(complaint.status, "PENDING")
+        self.assertEqual(complaint.status, "submitted")
 
     def test_resident_only_sees_own_complaints(self):
         """Test RBAC: residents only see their own complaints"""

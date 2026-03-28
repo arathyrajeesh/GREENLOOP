@@ -21,7 +21,7 @@ class WorkerRecyclerCreateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['username', 'password', 'name', 'role', 'ward']
+        fields = ['username', 'email', 'password', 'name', 'role', 'ward']
         
     def validate_role(self, value):
         if value not in ['HKS_WORKER', 'RECYCLER']:
@@ -29,8 +29,4 @@ class WorkerRecyclerCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
-        user = User.objects.create_user(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
+        return User.objects.create_user(**validated_data)

@@ -1,11 +1,13 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from apps.wards.models import Ward
 from apps.wards.serializers import WardSerializer
 from apps.users.serializers import UserSerializer
 from apps.users.models import User
 
+@extend_schema(tags=['Admin'])
 class WardViewSet(viewsets.ModelViewSet):
     queryset = Ward.objects.all()
     serializer_class = WardSerializer

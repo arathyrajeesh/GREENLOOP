@@ -1,0 +1,272 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.20, pytest-9.0.2, pluggy-1.6.0
+django: version: 5.0.14, settings: greenloop.settings.development (from env)
+rootdir: /app
+configfile: pytest.ini
+plugins: cov-7.1.0, django-4.12.0, celery-1.3.0, mock-3.15.1, pytest_docker_tools-3.1.9, Faker-40.11.1, anyio-4.13.0
+collected 59 items
+
+apps/accounts/test_accounts.py ....                                      [  6%]
+apps/attendance/test_attendance.py ..                                    [ 10%]
+apps/complaints/test_complaints.py F.                                    [ 13%]
+apps/complaints/tests.py ...                                             [ 18%]
+apps/dashboard/test_dashboard.py ..                                      [ 22%]
+apps/notifications/test_notifications.py ..                              [ 25%]
+apps/notifications/tests.py ..                                           [ 28%]
+apps/payments/test_payments.py ..                                        [ 32%]
+apps/payments/tests.py ..                                                [ 35%]
+apps/pickups/test_pickups.py ....                                        [ 42%]
+apps/pickups/tests.py ........                                           [ 55%]
+apps/recyclers/test_recyclers.py ..                                      [ 59%]
+apps/recyclers/tests.py ....                                             [ 66%]
+apps/reports/test_reports.py ..                                          [ 69%]
+apps/rewards/test_rewards.py ..                                          [ 72%]
+apps/rewards/tests.py ...                                                [ 77%]
+apps/routes/test_routes.py ...                                           [ 83%]
+apps/routes/tests.py ...                                                 [ 88%]
+apps/users/test_users.py .....                                           [ 96%]
+apps/wards/test_wards.py ..                                              [100%]
+
+=================================== FAILURES ===================================
+______________ TestComplaintViewSet.test_list_complaints_resident ______________
+
+self = <apps.complaints.test_complaints.TestComplaintViewSet object at 0x799baa2e7970>
+authenticated_client = <rest_framework.test.APIClient object at 0x799ba94fb5e0>
+resident_user = <User: susan95@example.com (Amy Davis)>
+
+    def test_list_complaints_resident(self, authenticated_client, resident_user):
+        ComplaintFactory(reporter=resident_user)
+        url = reverse('complaint-list')
+        response = authenticated_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+>       assert len(response.data['results']) >= 1
+E       KeyError: 'results'
+
+apps/complaints/test_complaints.py:16: KeyError
+=============================== warnings summary ===============================
+../usr/local/lib/python3.10/site-packages/django/conf/__init__.py:251
+  /usr/local/lib/python3.10/site-packages/django/conf/__init__.py:251: RemovedInDjango51Warning: The STATICFILES_STORAGE setting is deprecated. Use STORAGES instead.
+    warnings.warn(STATICFILES_STORAGE_DEPRECATED_MSG, RemovedInDjango51Warning)
+
+apps/accounts/test_accounts.py: 1 warning
+apps/complaints/test_complaints.py: 2 warnings
+apps/dashboard/test_dashboard.py: 1 warning
+apps/notifications/test_notifications.py: 2 warnings
+apps/payments/test_payments.py: 1 warning
+apps/pickups/test_pickups.py: 4 warnings
+apps/rewards/test_rewards.py: 3 warnings
+apps/routes/test_routes.py: 1 warning
+apps/users/test_users.py: 2 warnings
+  /usr/local/lib/python3.10/site-packages/factory/django.py:182: DeprecationWarning: ResidentFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the ResidentFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+apps/accounts/test_accounts.py::TestOTPAuth::test_otp_verify_success
+apps/accounts/test_accounts.py::TestWorkerLogin::test_worker_login_success
+  /usr/local/lib/python3.10/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 15 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+apps/accounts/test_accounts.py: 2 warnings
+apps/attendance/test_attendance.py: 2 warnings
+apps/dashboard/test_dashboard.py: 2 warnings
+apps/payments/test_payments.py: 1 warning
+apps/pickups/test_pickups.py: 2 warnings
+apps/routes/test_routes.py: 2 warnings
+  /usr/local/lib/python3.10/site-packages/factory/django.py:182: DeprecationWarning: WorkerFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the WorkerFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+apps/complaints/test_complaints.py::TestComplaintTasks::test_check_pending_complaints_escalation
+apps/recyclers/test_recyclers.py::TestRecyclerViewSet::test_list_material_types
+apps/recyclers/test_recyclers.py::TestRecyclerPurchase::test_list_purchases
+apps/reports/test_reports.py::TestReportViewSet::test_list_report_categories
+apps/reports/test_reports.py::TestReportViewSet::test_list_reports
+apps/users/test_users.py::TestUserViewSet::test_list_users_authenticated
+apps/users/test_users.py::TestWorkerRecyclerCreateAPIView::test_create_worker_admin
+  /usr/local/lib/python3.10/site-packages/factory/django.py:182: DeprecationWarning: AdminFactory._after_postgeneration will stop saving the instance after postgeneration hooks in the next major release.
+  If the save call is extraneous, set skip_postgeneration_save=True in the AdminFactory.Meta.
+  To keep saving the instance, move the save call to your postgeneration hooks or override _after_postgeneration.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.10.20-final-0 _______________
+
+Name                                                                                                 Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------------------------------------------------------------
+apps/__init__.py                                                                                         0      0   100%
+apps/accounts/__init__.py                                                                                0      0   100%
+apps/accounts/admin.py                                                                                   7      0   100%
+apps/accounts/apps.py                                                                                   20      8    60%   12-13, 25-30, 33-34
+apps/accounts/backends.py                                                                               15      4    73%   9, 14-18
+apps/accounts/migrations/0001_initial.py                                                                 7      0   100%
+apps/accounts/migrations/0002_otpcode_failed_attempts.py                                                 4      0   100%
+apps/accounts/migrations/__init__.py                                                                     0      0   100%
+apps/accounts/models.py                                                                                 24      1    96%   35
+apps/accounts/serializers.py                                                                            19      0   100%
+apps/accounts/tasks.py                                                                                  16     16     0%   1-24
+apps/accounts/test_accounts.py                                                                          42      0   100%
+apps/accounts/tests.py                                                                                   1      0   100%
+apps/accounts/utils.py                                                                                  26     20    23%   13-47
+apps/accounts/views.py                                                                                 190    103    46%   37-54, 67-205, 222, 236, 249, 270, 277, 280, 303-310, 324-336, 352, 362, 366
+apps/attendance/__init__.py                                                                              0      0   100%
+apps/attendance/admin.py                                                                                 7      0   100%
+apps/attendance/apps.py                                                                                  0      0   100%
+apps/attendance/migrations/0001_initial.py                                                               7      0   100%
+apps/attendance/migrations/0002_attendancelog_ppe_selfie.py                                              4      0   100%
+apps/attendance/migrations/0003_attendancelog_check_in_location_and_more.py                              5      0   100%
+apps/attendance/migrations/0004_attendancelog_ppe_photo_url.py                                           4      0   100%
+apps/attendance/migrations/__init__.py                                                                   0      0   100%
+apps/attendance/models.py                                                                               25      1    96%   43
+apps/attendance/serializers.py                                                                           8      0   100%
+apps/attendance/test_attendance.py                                                                      23      0   100%
+apps/attendance/tests.py                                                                                 1      0   100%
+apps/attendance/views.py                                                                                73     32    56%   24-44, 50, 59, 64, 69-70, 74, 83, 101-115
+apps/complaints/__init__.py                                                                              0      0   100%
+apps/complaints/admin.py                                                                                 8      0   100%
+apps/complaints/apps.py                                                                                  0      0   100%
+apps/complaints/migrations/0001_initial.py                                                               7      0   100%
+apps/complaints/migrations/0002_complaint_image_complaint_location.py                                    5      0   100%
+apps/complaints/migrations/0003_complaint_assigned_to.py                                                 6      0   100%
+apps/complaints/migrations/0004_remove_complaint_complaint_resident_idx_and_more.py                      6      0   100%
+apps/complaints/migrations/0005_complaint_is_escalated_complaint_priority_and_more.py                    4      0   100%
+apps/complaints/migrations/__init__.py                                                                   0      0   100%
+apps/complaints/models.py                                                                               25      1    96%   66
+apps/complaints/serializers.py                                                                          15      0   100%
+apps/complaints/tasks.py                                                                                23      1    96%   40
+apps/complaints/test_complaints.py                                                                      30      0   100%
+apps/complaints/tests.py                                                                                35      0   100%
+apps/complaints/tests_field_issues.py                                                                   36     36     0%   1-54
+apps/complaints/views.py                                                                                66     37    44%   16, 20, 27, 42-56, 61-84, 89-116
+apps/dashboard/__init__.py                                                                               0      0   100%
+apps/dashboard/admin.py                                                                                  8      0   100%
+apps/dashboard/apps.py                                                                                   0      0   100%
+apps/dashboard/consumers.py                                                                             51     51     0%   1-102
+apps/dashboard/migrations/0001_initial.py                                                                5      0   100%
+apps/dashboard/migrations/0002_syncqueue_device_id_syncqueue_status_syncqueue_user.py                    6      0   100%
+apps/dashboard/migrations/0003_syncqueue_client_id_syncqueue_conflict_reason_and_more.py                 4      0   100%
+apps/dashboard/migrations/0004_syncqueue_client_timestamp.py                                             4      0   100%
+apps/dashboard/migrations/__init__.py                                                                    0      0   100%
+apps/dashboard/models.py                                                                                25      1    96%   49
+apps/dashboard/serializers.py                                                                            7      0   100%
+apps/dashboard/test_dashboard.py                                                                        18      0   100%
+apps/dashboard/tests.py                                                                                  1      0   100%
+apps/dashboard/tests_sync.py                                                                            64     64     0%   1-147
+apps/dashboard/views.py                                                                                101     24    76%   24, 27, 37, 51-52, 72, 97-103, 129-130, 137-139, 167-180
+apps/notifications/__init__.py                                                                           0      0   100%
+apps/notifications/admin.py                                                                              7      0   100%
+apps/notifications/apps.py                                                                               0      0   100%
+apps/notifications/consumers.py                                                                         11     11     0%   1-14
+apps/notifications/migrations/0001_initial.py                                                            7      0   100%
+apps/notifications/migrations/__init__.py                                                                0      0   100%
+apps/notifications/models.py                                                                            15      1    93%   24
+apps/notifications/serializers.py                                                                        7      0   100%
+apps/notifications/tasks.py                                                                             83     58    30%   17-58, 76-77, 85-112, 119-130, 137-154
+apps/notifications/test_notifications.py                                                                27      1    96%   18
+apps/notifications/tests.py                                                                             23      0   100%
+apps/notifications/views.py                                                                             15      2    87%   11, 15
+apps/payments/__init__.py                                                                                0      0   100%
+apps/payments/admin.py                                                                                   8      0   100%
+apps/payments/apps.py                                                                                    0      0   100%
+apps/payments/migrations/0001_initial.py                                                                 8      0   100%
+apps/payments/migrations/0002_feecollection_ward.py                                                      5      0   100%
+apps/payments/migrations/__init__.py                                                                     0      0   100%
+apps/payments/models.py                                                                                 32      1    97%   69
+apps/payments/serializers.py                                                                             7      0   100%
+apps/payments/test_payments.py                                                                          15      0   100%
+apps/payments/tests.py                                                                                  28      0   100%
+apps/payments/tests_summary.py                                                                          42     42     0%   1-74
+apps/payments/views.py                                                                                  33      4    88%   15, 19, 23, 35
+apps/pickups/__init__.py                                                                                 0      0   100%
+apps/pickups/admin.py                                                                                   12      0   100%
+apps/pickups/apps.py                                                                                     6      0   100%
+apps/pickups/migrations/0001_initial.py                                                                  9      0   100%
+apps/pickups/migrations/0002_pickupverification.py                                                       6      0   100%
+apps/pickups/migrations/0003_pickup_weight_kg.py                                                         4      0   100%
+apps/pickups/migrations/0004_pickup_time_slot.py                                                         4      0   100%
+apps/pickups/migrations/0005_pickup_notes_pickupverification_ai_classification_and_more.py               4      0   100%
+apps/pickups/migrations/0006_alter_pickup_waste_type.py                                                  4      0   100%
+apps/pickups/migrations/0007_pickup_qr_code_image.py                                                     4      0   100%
+apps/pickups/migrations/__init__.py                                                                      0      0   100%
+apps/pickups/models.py                                                                                  76      6    92%   50-51, 68-69, 93, 118
+apps/pickups/serializers.py                                                                             10      0   100%
+apps/pickups/serializers_verification.py                                                                 7      0   100%
+apps/pickups/signals.py                                                                                 23      0   100%
+apps/pickups/tasks.py                                                                                   17     11    35%   13-26
+apps/pickups/test_pickups.py                                                                            51      3    94%   78-80
+apps/pickups/tests.py                                                                                  124      0   100%
+apps/pickups/views.py                                                                                  117     15    87%   21, 27, 62, 65, 71, 75, 103-104, 112, 123, 132-133, 154-155, 168
+apps/recyclers/__init__.py                                                                               0      0   100%
+apps/recyclers/admin.py                                                                                 17      0   100%
+apps/recyclers/apps.py                                                                                   0      0   100%
+apps/recyclers/migrations/0001_initial.py                                                                7      0   100%
+apps/recyclers/migrations/__init__.py                                                                    0      0   100%
+apps/recyclers/models.py                                                                                38      3    92%   15, 38, 67
+apps/recyclers/serializers.py                                                                           16      0   100%
+apps/recyclers/test_recyclers.py                                                                        16      0   100%
+apps/recyclers/tests.py                                                                                 43      0   100%
+apps/recyclers/views.py                                                                                 40      6    85%   16, 34, 38, 42-44
+apps/reports/__init__.py                                                                                 0      0   100%
+apps/reports/admin.py                                                                                   11      0   100%
+apps/reports/apps.py                                                                                     0      0   100%
+apps/reports/migrations/0001_initial.py                                                                  7      0   100%
+apps/reports/migrations/__init__.py                                                                      0      0   100%
+apps/reports/models.py                                                                                  24      2    92%   13, 38
+apps/reports/serializers.py                                                                             10      0   100%
+apps/reports/test_reports.py                                                                            13      0   100%
+apps/reports/tests.py                                                                                    1      0   100%
+apps/reports/views.py                                                                                   14      1    93%   17
+apps/rewards/__init__.py                                                                                 0      0   100%
+apps/rewards/admin.py                                                                                   12      0   100%
+apps/rewards/apps.py                                                                                     0      0   100%
+apps/rewards/migrations/0001_initial.py                                                                  7      0   100%
+apps/rewards/migrations/__init__.py                                                                      0      0   100%
+apps/rewards/models.py                                                                                  31      2    94%   30, 63
+apps/rewards/serializers.py                                                                             11      0   100%
+apps/rewards/tasks.py                                                                                   28      9    68%   22-23, 30, 32, 43-48
+apps/rewards/test_rewards.py                                                                            23      0   100%
+apps/rewards/tests.py                                                                                   34      0   100%
+apps/rewards/views.py                                                                                   39     11    72%   12, 16, 20, 27-36
+apps/routes/__init__.py                                                                                  0      0   100%
+apps/routes/admin.py                                                                                     7      0   100%
+apps/routes/apps.py                                                                                      0      0   100%
+apps/routes/migrations/0001_initial.py                                                                   8      0   100%
+apps/routes/migrations/__init__.py                                                                       0      0   100%
+apps/routes/models.py                                                                                   20      3    85%   26, 28, 33
+apps/routes/serializers.py                                                                               9      0   100%
+apps/routes/test_routes.py                                                                              23      0   100%
+apps/routes/tests.py                                                                                    35      2    94%   84-86
+apps/routes/tests_hks.py                                                                                86     86     0%   1-186
+apps/routes/views.py                                                                                    25      1    96%   31
+apps/users/__init__.py                                                                                   0      0   100%
+apps/users/admin.py                                                                                      8      0   100%
+apps/users/apps.py                                                                                       0      0   100%
+apps/users/migrations/0001_initial.py                                                                    7      0   100%
+apps/users/migrations/0002_create_superuser.py                                                          11      5    55%   5-10
+apps/users/migrations/0003_user_address.py                                                               4      0   100%
+apps/users/migrations/0004_user_username_alter_user_email.py                                             4      0   100%
+apps/users/migrations/0005_user_fcm_token.py                                                             4      0   100%
+apps/users/migrations/__init__.py                                                                        0      0   100%
+apps/users/models.py                                                                                    42      5    88%   9, 18-21
+apps/users/serializers.py                                                                               25      1    96%   28
+apps/users/test_users.py                                                                                31      0   100%
+apps/users/tests.py                                                                                      1      0   100%
+apps/users/views.py                                                                                     17      1    94%   20
+apps/wards/__init__.py                                                                                   0      0   100%
+apps/wards/admin.py                                                                                      7      0   100%
+apps/wards/apps.py                                                                                       0      0   100%
+apps/wards/migrations/0001_initial.py                                                                    7      0   100%
+apps/wards/migrations/0002_rename_wards_ward_boundar_300e88_gist_wards_ward_boundar_2da4fc_gist.py       4      0   100%
+apps/wards/migrations/__init__.py                                                                        0      0   100%
+apps/wards/models.py                                                                                    15      1    93%   13
+apps/wards/serializers.py                                                                                8      0   100%
+apps/wards/test_wards.py                                                                                19      0   100%
+apps/wards/tests.py                                                                                      1      0   100%
+apps/wards/views.py                                                                                     32     15    53%   16, 22-25, 30-51
+----------------------------------------------------------------------------------------------------------------------------------
+TOTAL                                                                                                 2841    709    75%
+=========================== short test summary info ============================
+FAILED apps/complaints/test_complaints.py::TestComplaintViewSet::test_list_complaints_resident
+================== 1 failed, 58 passed, 38 warnings in 27.12s ==================

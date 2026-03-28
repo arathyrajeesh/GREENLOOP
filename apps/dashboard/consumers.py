@@ -15,14 +15,15 @@ class TrackingConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        self.group_name = "admin_tracking"
-        self.planned_path = None # Cache for the worker's today's route
-        
-        # All authenticated users join the admin_tracking group
-        await self.channel_layer.group_add(
-            self.group_name,
-            self.channel_name
-        )
+        # Only admins join the tracking group to receive updates
+        if self.user.role == 'ADMIN':
+            self.group_name = "admin_tracking"
+            await self.channel_layer.group_add(
+                self.group_name,
+                self.channel_name
+            )
+        else:
+            self.group_name = None
         
         if self.user.role == 'HKS_WORKER':
             active_workers = cache.get("active_workers", set())
@@ -84,13 +85,14 @@ class TrackingConsumer(AsyncWebsocketConsumer):
             }
             cache.set(f"worker_pos:{self.user.id}", pos_data, timeout=3600)
             
-            await self.channel_layer.group_send(
-                self.group_name,
-                {
-                    "type": "worker_location_update",
-                    "data": pos_data
-                }
-            )
+            if self.user.role == 'HKS_WORKER':
+                await self.channel_layer.group_send(
+                    "admin_tracking",
+                    {
+                        "type": "worker_location_update",
+                        "data": pos_data
+                    }
+                )
 
     async def worker_location_update(self, event):
         """

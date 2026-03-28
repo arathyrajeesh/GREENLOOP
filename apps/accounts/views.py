@@ -214,7 +214,8 @@ class OTPRequestView(views.APIView):
 
     @extend_schema(
         request=OTPRequestSerializer, 
-        responses={200: BaseResponseSerializer}
+        responses={200: BaseResponseSerializer},
+        tags=['Resident', 'Auth']
     )
     def post(self, request):
         email = request.data.get('email')
@@ -260,7 +261,8 @@ class OTPVerifyView(views.APIView):
 
     @extend_schema(
         request=OTPVerifySerializer, 
-        responses={200: BaseResponseSerializer}
+        responses={200: BaseResponseSerializer},
+        tags=['Resident', 'Auth']
     )
     def post(self, request):
         email = request.data.get('email')
@@ -318,7 +320,8 @@ class LogoutView(views.APIView):
     @extend_schema(
         request=LogoutSerializer,
         responses={200: BaseResponseSerializer},
-        description="Blacklist the refresh token to logout the user."
+        description="Blacklist the refresh token to logout the user.",
+        tags=['Auth', 'Shared']
     )
     def post(self, request):
         try:
@@ -344,7 +347,8 @@ class WorkerLoginView(views.APIView):
     
     @extend_schema(
         request=WorkerLoginSerializer,
-        responses={200: BaseResponseSerializer}
+        responses={200: BaseResponseSerializer},
+        tags=['HKS Worker', 'Admin', 'Auth']
     )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

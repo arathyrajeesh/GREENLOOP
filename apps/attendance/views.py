@@ -7,11 +7,13 @@ from .models import AttendanceLog
 from .serializers import AttendanceLogSerializer
 from drf_spectacular.utils import extend_schema
 
+@extend_schema(tags=['Admin'])
 class AttendanceLogViewSet(viewsets.ModelViewSet):
     queryset = AttendanceLog.objects.all()
     serializer_class = AttendanceLogSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+@extend_schema(tags=['HKS Worker'])
 class WorkerAttendanceView(APIView):
     """
     Handles Check-In (POST), Check-Out (PATCH), and History (GET) for HKS Workers,
