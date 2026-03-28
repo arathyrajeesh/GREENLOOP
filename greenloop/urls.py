@@ -73,6 +73,10 @@ urlpatterns = [
     path('api/v1/auth/logout/', LogoutView.as_view(), name='logout'),
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # User Preferred Aliases
+    path('request-otp/', OTPRequestView.as_view(), name='request_otp_alias'),
+    path('verify-otp/', OTPVerifyView.as_view(), name='verify_otp_alias'),
 ]
 from django.conf import settings
 from django.conf.urls.static import static

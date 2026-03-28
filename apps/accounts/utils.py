@@ -5,19 +5,19 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-def send_resend_email(to_email: str, subject: str, html_content: str) -> bool:
+def send_resend_email(to_email: str, subject: str, html_content: str) -> tuple[bool, str]:
     """
     Sends an email using the Resend API via HTTP POST.
     Completely bypasses Django's SMTP backend to avoid Render port blocking.
     """
     if to_email.endswith("@loadtest.com"):
         logger.info(f"Bypassing email for load test user: {to_email}")
-        return True
+        return True, "Load test bypass"
 
     api_key = getattr(settings, 'RESEND_API_KEY', os.getenv('RESEND_API_KEY'))
     if not api_key:
         logger.error("RESEND_API_KEY is not configured.")
-        return False
+        return False, "API Key missing"
 
     url = "https://api.resend.com/emails"
     headers = {
@@ -52,3 +52,13 @@ def send_resend_email(to_email: str, subject: str, html_content: str) -> bool:
         error_msg = f"Resend API Error: Network failure - {str(e)}"
         logger.error(error_msg)
         return False, error_msg
+
+def send_email(to_email: str, otp: str) -> bool:
+    """
+    Standard helper wrapper required by the specification.
+    Returns True if email sent, False otherwise.
+    """
+    subject = "GreenLoop Login OTP"
+    html_content = f"<p>Your GreenLoop login OTP is <strong>{otp}</strong>. It is valid for 5 minutes.</p>"
+    success, _ = send_resend_email(to_email, subject, html_content)
+    return success

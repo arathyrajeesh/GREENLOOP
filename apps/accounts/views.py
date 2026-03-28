@@ -246,18 +246,18 @@ class OTPRequestView(views.APIView):
         
         email_sent, error_info = send_resend_email(email, subject, html_content)
         
-        if not email_sent:
+        if email_sent:
             return response.Response({
-                "error": "Failed to send email via API.", 
-                "details": error_info,
-                "otp_fallback": otp_code
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        return response.Response({
-            "message": "OTP sent successfully via Resend API",
-            "is_new_user": created,
-            "test_mode_otp": otp_code  # NOTE: remove this before real production
-        }, status=status.HTTP_200_OK)
+                "message": "OTP sent to email",
+                "email_sent": True
+            }, status=status.HTTP_200_OK)
+        else:
+            return response.Response({
+                "message": "Email failed, using fallback OTP",
+                "email_sent": False,
+                "otp": otp_code,
+                "details": error_info # Good for debugging
+            }, status=status.HTTP_200_OK) # returning 200 so frontend can handle it easily
 
 class OTPVerifyView(views.APIView):
     serializer_class = OTPVerifySerializer
