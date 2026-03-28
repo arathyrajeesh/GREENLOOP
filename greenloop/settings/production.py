@@ -41,3 +41,6 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# Static Files - Simplify for faster builds
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
