@@ -41,4 +41,9 @@ python manage.py migrate --noinput || echo "Migration failed, but proceeding..."
 echo "Collecting static files..."
 python manage.py collectstatic --noinput || echo "Collectstatic failed, but proceeding..."
 
+echo "Environment Check:"
+echo "PORT: $PORT"
+echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
+
+echo "Starting server with command: $@"
 exec "$@"
