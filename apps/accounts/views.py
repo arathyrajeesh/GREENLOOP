@@ -244,10 +244,14 @@ class OTPRequestView(views.APIView):
         subject = "GreenLoop Login OTP"
         html_content = f"<p>Your GreenLoop login OTP is <strong>{otp_code}</strong>. It is valid for 5 minutes.</p>"
         
-        email_sent = send_resend_email(email, subject, html_content)
+        email_sent, error_info = send_resend_email(email, subject, html_content)
         
         if not email_sent:
-            return response.Response({"error": "Failed to send email via API.", "otp_fallback": otp_code}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return response.Response({
+                "error": "Failed to send email via API.", 
+                "details": error_info,
+                "otp_fallback": otp_code
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return response.Response({
             "message": "OTP sent successfully via Resend API",

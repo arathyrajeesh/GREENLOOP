@@ -38,14 +38,17 @@ def send_resend_email(to_email: str, subject: str, html_content: str) -> bool:
         
         if response.status_code in [200, 201]:
             logger.info(f"Email sent successfully to {to_email}")
-            return True
+            return True, "Success"
         else:
-            logger.error(f"Resend API Error: {response.status_code} - {response.text}")
-            return False
+            error_msg = f"Resend API Error: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            return False, error_msg
 
     except requests.exceptions.Timeout:
-        logger.error(f"Resend API Error: Request timed out for {to_email}")
-        return False
+        error_msg = f"Resend API Error: Request timed out for {to_email}"
+        logger.error(error_msg)
+        return False, error_msg
     except requests.exceptions.RequestException as e:
-        logger.error(f"Resend API Error: Network failure - {str(e)}")
-        return False
+        error_msg = f"Resend API Error: Network failure - {str(e)}"
+        logger.error(error_msg)
+        return False, error_msg
