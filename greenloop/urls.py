@@ -87,6 +87,7 @@ urlpatterns = [
     path('api/v1/auth/otp/request/', OTPRequestView.as_view(), name='otp_request'),
     path('api/v1/auth/otp/verify/', OTPVerifyView.as_view(), name='otp_verify'),
     path('api/v1/auth/worker-login/', WorkerLoginView.as_view(), name='worker_login'),
+    path('api/v1/auth/admin-login/', AdminLoginView.as_view(), name='admin_login'),
     path('api/v1/auth/logout/', LogoutView.as_view(), name='logout'),
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/v1/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

@@ -369,9 +369,9 @@ class WorkerLoginView(views.APIView):
         if not user.is_active:
             return response.Response({"error": "This account is inactive."}, status=status.HTTP_401_UNAUTHORIZED)
             
-        # Optional check: constrain to HKS_WORKER, RECYCLER, ADMIN
-        if user.role not in ['HKS_WORKER', 'RECYCLER', 'ADMIN']:
-             return response.Response({"error": "This login point is restricted to staff."}, status=status.HTTP_403_FORBIDDEN)
+        # Constraint: Allow HKS_WORKER and RECYCLER only
+        if user.role not in ['HKS_WORKER', 'RECYCLER']:
+             return response.Response({"error": "This login point is restricted to field-workers. Admins must use the Admin Login."}, status=status.HTTP_403_FORBIDDEN)
              
         # Generate tokens
         refresh = RefreshToken.for_user(user)
@@ -388,5 +388,51 @@ class WorkerLoginView(views.APIView):
                 "name": user.name,
                 "role": user.role,
                 "ward_id": user.ward_id
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class AdminLoginView(views.APIView):
+    """
+    Separate login endpoint for system administrators.
+    """
+    serializer_class = WorkerLoginSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    @extend_schema(
+        request=WorkerLoginSerializer,
+        responses={200: BaseResponseSerializer},
+        tags=['Admin', 'Auth']
+    )
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        username = serializer.validated_data.get('username')
+        password = serializer.validated_data.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if not user or not user.is_active:
+            return response.Response({"error": "Invalid administrative credentials or account inactive."}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        # Constraint: Allow ADMIN only
+        if user.role != 'ADMIN':
+             return response.Response({"error": "This login point is restricted to system administrators."}, status=status.HTTP_403_FORBIDDEN)
+             
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        refresh['role'] = user.role
+        
+        return response.Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role,
+                "token_type": "ADMIN_TOKEN"
             }
         }, status=status.HTTP_200_OK)

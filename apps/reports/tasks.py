@@ -55,13 +55,28 @@ def generate_ward_collection_report(report_id):
         complaints_qs = Complaint.objects.filter(
             reporter__ward=ward, created_at__date__range=[start, end]
         ).values('category').annotate(count=Count('id'))
+
+        # 5. NPS and Onboarding (New)
+        from apps.reports.models import NPSSurvey
+        from apps.users.models import User
+        
+        nps_data = NPSSurvey.objects.filter(
+            resident__ward=ward, submitted_at__date__range=[start, end]
+        ).aggregate(avg_score=models.Avg('score'), total_responses=Count('id'))
+        
+        onboarding_count = User.objects.filter(
+            ward=ward, role='RESIDENT', created_at__date__range=[start, end]
+        ).count()
         
         # Combine data for context
         report_data = {
             'pickups_by_status': pickups_by_status,
             'waste_by_material': list(waste_data),
             'total_fees': total_fees,
-            'complaints_by_category': list(complaints_qs)
+            'complaints_by_category': list(complaints_qs),
+            'nps_avg': round(nps_data['avg_score'], 2) if nps_data['avg_score'] else "0.0",
+            'nps_responses': nps_data['total_responses'],
+            'onboarded_households': onboarding_count
         }
 
         # --- Generate CSV ---
@@ -76,6 +91,8 @@ def generate_ward_collection_report(report_id):
             csv_writer.writerow(['Waste Collected (kg)', w['material_type__name'], w['total_qty']])
             
         csv_writer.writerow(['Financial', 'Total Fees (INR)', total_fees])
+        csv_writer.writerow(['Metrics', 'Avg NPS Score', report_data['nps_avg']])
+        csv_writer.writerow(['Metrics', 'Households Onboarded', report_data['onboarded_households']])
         
         for c in complaints_qs:
             csv_writer.writerow(['Complaint', c['category'], c['count']])
