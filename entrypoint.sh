@@ -5,18 +5,22 @@ set -e
 DB_HOST="${DB_HOST:-db}"
 DB_PORT="${DB_PORT:-5432}"
 
-# Skip wait if on Render or using an external DATABASE_URL (not pointing to 'db')
+echo "==> Starting GreenLoop Entrypoint..."
+
+# Skip wait if on Render or using an external DATABASE_URL
 SKIP_WAIT=false
-if [ -n "$RENDER" ]; then
+if [ -n "$RENDER" ] || [ -n "$RENDER_SERVICE_ID" ]; then
     SKIP_WAIT=true
+    echo "==> Render environment detected."
 elif [ -n "$DATABASE_URL" ] && [[ "$DATABASE_URL" != *"@db"* ]] && [[ "$DATABASE_URL" != *"@localhost"* ]]; then
     SKIP_WAIT=true
+    echo "==> External database detected."
 fi
 
 if [ "$SKIP_WAIT" = "true" ]; then
-    echo "Skipping DB wait (external database or Render environment detected)."
+    echo "==> Skipping database reachability check."
 else
-    echo "Waiting for PostgreSQL at $DB_HOST:$DB_PORT ..."
+    echo "==> Waiting for PostgreSQL at $DB_HOST:$DB_PORT ..."
     python << END
 import socket, os, time
 db_host = "$DB_HOST"
@@ -35,15 +39,15 @@ END
 fi
 
 # Run migrations and collectstatic
-echo "Running migrations..."
-python manage.py migrate --noinput || echo "Migration failed, but proceeding..."
+echo "==> Running migrations..."
+python manage.py migrate --noinput || echo "==> Migration failed, but proceeding..."
 
-echo "Collecting static files..."
-python manage.py collectstatic --noinput || echo "Collectstatic failed, but proceeding..."
+echo "==> Collecting static files..."
+python manage.py collectstatic --noinput || echo "==> Collectstatic failed, but proceeding..."
 
-echo "Environment Check:"
-echo "PORT: $PORT"
-echo "DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
+echo "==> Environment Check:"
+echo "    PORT: $PORT"
+echo "    DJANGO_SETTINGS_MODULE: $DJANGO_SETTINGS_MODULE"
 
-echo "Starting server with command: $@"
+echo "==> Executing start command: $@"
 exec "$@"

@@ -30,8 +30,12 @@ COPY . /app/
 # Make entrypoint executable
 RUN chmod +x /app/entrypoint.sh
 
+# Set production settings as default for Render
+ENV DJANGO_SETTINGS_MODULE=greenloop.settings.production
+ENV PYTHONUNBUFFERED=1
+
 # Run entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-# 🔥 START SERVER (ASGI)
-CMD ["sh", "-c", "gunicorn greenloop.asgi:application -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:${PORT:-8000}"]
+# Start server using Daphne (recommended for ASGI/Channels on Render)
+CMD daphne -b 0.0.0.0 -p ${PORT:-10000} greenloop.asgi:application
