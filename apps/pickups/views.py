@@ -5,8 +5,8 @@ from django.db.models import Count
 from drf_spectacular.utils import extend_schema
 from django.utils import timezone
 from datetime import timedelta
-from apps.pickups.models import Pickup, PickupVerification
-from apps.pickups.serializers import PickupSerializer
+from apps.pickups.models import Pickup, PickupVerification, PickupSlot
+from apps.pickups.serializers import PickupSerializer, PickupSlotSerializer
 from apps.pickups.serializers_verification import PickupVerificationSerializer
 
 @extend_schema(tags=['Resident', 'HKS Worker'])
@@ -49,28 +49,38 @@ class PickupViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response({"error": "Invalid date format, use YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
             
-        # Define static collection slots for all wards
-        all_slots = [
-            {"time_slot": "08:00 - 10:00", "label": "Morning (8-10 AM)", "capacity": 15},
-            {"time_slot": "10:00 - 12:00", "label": "Late Morning (10-12 PM)", "capacity": 15},
-            {"time_slot": "14:00 - 16:00", "label": "Afternoon (2-4 PM)", "capacity": 15},
-            {"time_slot": "16:00 - 18:00", "label": "Evening (4-6 PM)", "capacity": 15},
-        ]
+        # Get active slots from database
+        active_slots = PickupSlot.objects.filter(is_active=True)
         
+        # Fallback: if no slots in DB, seed defaults for this request context
+        if not active_slots.exists():
+             defaults = [
+                {"time_range": "08:00 - 10:00", "label": "Morning (8-10 AM)"},
+                {"time_range": "10:00 - 12:00", "label": "Late Morning (10-12 PM)"},
+                {"time_range": "14:00 - 16:00", "label": "Afternoon (2-4 PM)"},
+                {"time_range": "16:00 - 18:00", "label": "Evening (4-6 PM)"},
+             ]
+             for d in defaults:
+                  PickupSlot.objects.get_or_create(time_range=d['time_range'], defaults={'label': d['label']})
+             active_slots = PickupSlot.objects.filter(is_active=True)
+
         # Get existing pickup counts for this date/ward
         pickup_counts = Pickup.objects.filter(
             ward_id=ward_id, 
             scheduled_date=scheduled_date
-        ).values('time_slot').annotate(count=Count('id'))
+        ).values('time_slot_ref').annotate(count=Count('id'))
         
-        counts_dict = {item['time_slot']: item['count'] for item in pickup_counts}
+        counts_dict = {item['time_slot_ref']: item['count'] for item in pickup_counts}
         
         results = []
-        for slot in all_slots:
-            booked = counts_dict.get(slot['time_slot'], 0)
-            remains = slot['capacity'] - booked
+        for slot in active_slots:
+            booked = counts_dict.get(slot.id, 0)
+            remains = slot.capacity - booked
             results.append({
-                **slot,
+                "id": str(slot.id),
+                "time_slot": slot.time_range,
+                "label": slot.label,
+                "capacity": slot.capacity,
                 "booked_count": booked,
                 "remaining_capacity": max(0, remains),
                 "is_available": remains > 0
@@ -242,6 +252,15 @@ class PickupViewSet(viewsets.ModelViewSet):
             "payment_required": payment_required,
             "message": "Fee collection required for weight > 50kg" if payment_required else "Pickup completed"
         })
+
+@extend_schema(tags=['Admin'])
+class PickupSlotViewSet(viewsets.ModelViewSet):
+    """
+    Admin-only configuration for available pickup slots across the city.
+    """
+    queryset = PickupSlot.objects.all()
+    serializer_class = PickupSlotSerializer
+    permission_classes = [permissions.IsAdminUser]
 
 @extend_schema(tags=['HKS Worker'])
 class PickupVerificationViewSet(viewsets.GenericViewSet):

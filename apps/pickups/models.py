@@ -2,6 +2,24 @@ import uuid
 from django.contrib.gis.db import models
 from django.utils import timezone
 
+class PickupSlot(models.Model):
+    """
+    Master configuration for collection slots.
+    Managed by ULB Admins.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    time_range = models.CharField(max_length=50, help_text="e.g. '08:00 - 10:00'")
+    label = models.CharField(max_length=100, help_text="e.g. 'Morning Shift'")
+    capacity = models.PositiveIntegerField(default=15)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.label} ({self.time_range})"
+
+    class Meta:
+        ordering = ['time_range']
+
 class Pickup(models.Model):
     WASTE_CHOICES = (
         ('dry', 'Dry Waste'),
@@ -25,7 +43,15 @@ class Pickup(models.Model):
     waste_type = models.CharField(max_length=20, choices=WASTE_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     scheduled_date = models.DateField(default=timezone.now)
-    time_slot = models.CharField(max_length=50, blank=True, null=True, help_text="e.g., '10:00-12:00'")
+    time_slot_ref = models.ForeignKey(
+        PickupSlot, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name="pickups",
+        help_text="Reference to the master slot configuration"
+    )
+    time_slot = models.CharField(max_length=50, blank=True, null=True, help_text="e.g., '10:00-12:00' (Legacy or Custom)")
     notes = models.TextField(blank=True, help_text="Mandatory note if GPS override was used")
 
     @property

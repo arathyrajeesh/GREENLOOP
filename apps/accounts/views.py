@@ -17,7 +17,9 @@ from .serializers import (
     OTPVerifySerializer,
     BaseResponseSerializer,
     LogoutSerializer,
-    WorkerLoginSerializer
+    LogoutSerializer,
+    WorkerLoginSerializer,
+    AdminLoginSerializer
 )
 from django.contrib.auth import authenticate
 
@@ -396,11 +398,11 @@ class AdminLoginView(views.APIView):
     """
     Separate login endpoint for system administrators.
     """
-    serializer_class = WorkerLoginSerializer
+    serializer_class = AdminLoginSerializer
     permission_classes = [permissions.AllowAny]
     
     @extend_schema(
-        request=WorkerLoginSerializer,
+        request=AdminLoginSerializer,
         responses={200: BaseResponseSerializer},
         tags=['Admin', 'Auth']
     )
@@ -409,10 +411,10 @@ class AdminLoginView(views.APIView):
         if not serializer.is_valid():
             return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
-        username = serializer.validated_data.get('username')
+        email = serializer.validated_data.get('email')
         password = serializer.validated_data.get('password')
         
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=email, password=password)
         if not user or not user.is_active:
             return response.Response({"error": "Invalid administrative credentials or account inactive."}, status=status.HTTP_401_UNAUTHORIZED)
             

@@ -21,5 +21,9 @@ class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
 class WorkerLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(required=True, help_text="Email or Username")
+    password = serializers.CharField(write_only=True, required=True)
+
+class AdminLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True, help_text="Administrator's registered email")
     password = serializers.CharField(write_only=True, required=True)

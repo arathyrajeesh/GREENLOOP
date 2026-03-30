@@ -11,7 +11,7 @@ from rest_framework import routers
 # ViewSets
 from apps.users.views import UserViewSet, WorkerRecyclerCreateAPIView
 from apps.wards.views import WardViewSet
-from apps.pickups.views import PickupViewSet, PickupVerificationViewSet
+from apps.pickups.views import PickupViewSet, PickupVerificationViewSet, PickupSlotViewSet
 from apps.routes.views import RouteViewSet, TodayRouteView
 from apps.attendance.views import AttendanceLogViewSet, WorkerAttendanceView
 from apps.complaints.views import ComplaintViewSet
@@ -34,6 +34,7 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'wards', WardViewSet)
 router.register(r'pickups', PickupViewSet, basename='pickup')
+router.register(r'pickup-slots', PickupSlotViewSet, basename='pickupslot')
 router.register(r'pickup-verifications', PickupVerificationViewSet, basename='pickupverification')
 router.register(r'routes', RouteViewSet, basename='route')
 router.register(r'attendance', AttendanceLogViewSet, basename='attendance')
