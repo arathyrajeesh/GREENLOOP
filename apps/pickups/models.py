@@ -108,6 +108,7 @@ class PickupVerification(models.Model):
     requires_admin_review = models.BooleanField(default=False)
     distance_meters = models.FloatField(null=True, blank=True)
     is_gps_override = models.BooleanField(default=False)
+    contamination_flag = models.BooleanField(default=False)
     comments = models.TextField(blank=True)
 
     class Meta:

@@ -152,3 +152,26 @@ def notify_admin_new_complaint(complaint_id):
         logger.error(f"Complaint {complaint_id} not found.")
     except Exception as e:
         logger.exception(f"Error notifying admins for complaint {complaint_id}: {str(e)}")
+
+@shared_task
+def notify_recycler_certificate_verified(certificate_id):
+    """
+    Notifies recycler when their PoR certificate is verified by admin.
+    """
+    try:
+        from apps.recyclers.models import RecyclingCertificate
+        certificate = RecyclingCertificate.objects.get(id=certificate_id)
+        recycler = certificate.recycler
+        
+        title = "Certificate Verified!"
+        body = f"Your Proof-of-Recycling certificate #{certificate.certificate_number} has been verified by the administration."
+        
+        send_fcm_push(recycler, title, body, data={"certificate_id": str(certificate.id)})
+        
+        # Internal record
+        Notification.objects.create(user=recycler, title=title, message=body)
+        
+    except RecyclingCertificate.DoesNotExist:
+        logger.error(f"Certificate {certificate_id} not found.")
+    except Exception as e:
+        logger.exception(f"Error notifying recycler for certificate {certificate_id}: {str(e)}")

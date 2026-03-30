@@ -11,6 +11,8 @@ from apps.complaints.models import Complaint
 from apps.accounts.models import OTPCode
 from apps.dashboard.models import SyncQueue
 from apps.attendance.models import AttendanceLog
+from apps.rewards.models import Reward, RewardItem
+from apps.recyclers.models import MaterialType, RecyclerPurchase, RecyclingCertificate
 
 class WardFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -107,3 +109,59 @@ class AttendanceLogFactory(factory.django.DjangoModelFactory):
     check_in = factory.LazyFunction(lambda: timezone.now().time())
     check_in_location = Point(76.95, 8.55)
     ppe_photo_url = factory.Faker('image_url')
+
+class PickupVerificationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PickupVerification
+
+    pickup = factory.SubFactory(PickupFactory)
+    verified_by = factory.SubFactory(WorkerFactory)
+    verified_at = factory.LazyFunction(timezone.now)
+    contamination_flag = False
+
+class RewardFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Reward
+
+    resident = factory.SubFactory(ResidentFactory)
+    points = 10
+    transaction_type = 'EARNED'
+    description = factory.Faker('sentence')
+    pickup = factory.SubFactory(PickupFactory, resident=factory.SelfAttribute('..resident'))
+
+class RewardItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RewardItem
+
+    name = factory.Faker('word')
+    description = factory.Faker('sentence')
+    points_cost = 100
+    is_active = True
+
+class MaterialTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = MaterialType
+    
+    name = factory.Sequence(lambda n: f"Material {n}")
+    category = "Plastic"
+    unit = "kg"
+    price_per_unit = 15.0
+
+class RecyclerPurchaseFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RecyclerPurchase
+        
+    recycler = factory.SubFactory(UserFactory, role='RECYCLER')
+    material_type = factory.SubFactory(MaterialTypeFactory)
+    quantity = 100.0
+    total_price = 1500.0
+    source_ward = factory.SubFactory(WardFactory)
+
+class RecyclingCertificateFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RecyclingCertificate
+        
+    recycler = factory.SubFactory(UserFactory, role='RECYCLER')
+    resident = factory.SubFactory(ResidentFactory)
+    certificate_number = factory.Sequence(lambda n: f"CERT-{n}")
+    status = 'PENDING'

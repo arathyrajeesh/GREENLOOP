@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 class MaterialType(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    category = models.CharField(max_length=50, blank=True, help_text="e.g., Plastic, Paper, Metal")
     unit = models.CharField(max_length=20, default="kg")
     price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True)
@@ -24,6 +25,13 @@ class RecyclerPurchase(models.Model):
     material_type = models.ForeignKey(MaterialType, on_delete=models.PROTECT)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     total_price = models.DecimalField(max_digits=12, decimal_places=2)
+    source_ward = models.ForeignKey(
+        "wards.Ward",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="recycler_purchases"
+    )
     purchase_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -42,7 +50,9 @@ class RecyclingCertificate(models.Model):
         "users.User",
         on_delete=models.CASCADE,
         related_name="recycling_certificates",
-        limit_choices_to={'role': 'RESIDENT'}
+        limit_choices_to={'role': 'RESIDENT'},
+        null=True,
+        blank=True
     )
     recycler = models.ForeignKey(
         "users.User",
@@ -51,6 +61,13 @@ class RecyclingCertificate(models.Model):
         limit_choices_to={'role': 'RECYCLER'}
     )
     certificate_number = models.CharField(max_length=50, unique=True)
+    status = models.CharField(
+        max_length=20, 
+        choices=[('PENDING', 'Pending'), ('VERIFIED', 'Verified'), ('REJECTED', 'Rejected')], 
+        default='PENDING'
+    )
+    certificate_file = models.FileField(upload_to='certificates/', blank=True, null=True)
+    purchases = models.ManyToManyField(RecyclerPurchase, related_name='certificates')
     issued_at = models.DateTimeField(auto_now_add=True)
     metadata = models.JSONField(default=dict, blank=True)
 
@@ -64,4 +81,5 @@ class RecyclingCertificate(models.Model):
         ordering = ['-issued_at']
 
     def __str__(self):
-        return f"Cert {self.certificate_number} for {self.resident.name}"
+        name = self.resident.name if self.resident else "Recycler Account"
+        return f"Cert {self.certificate_number} for {name}"

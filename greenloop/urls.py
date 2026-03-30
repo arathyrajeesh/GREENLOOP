@@ -15,7 +15,10 @@ from apps.pickups.views import PickupViewSet, PickupVerificationViewSet
 from apps.routes.views import RouteViewSet, TodayRouteView
 from apps.attendance.views import AttendanceLogViewSet, WorkerAttendanceView
 from apps.complaints.views import ComplaintViewSet
-from apps.rewards.views import RewardViewSet, RewardRedemptionViewSet
+from apps.rewards.views import (
+    RewardViewSet, RewardRedemptionViewSet, 
+    RewardSettingsViewSet, RewardItemManagementViewSet
+)
 from apps.payments.views import FeeCollectionViewSet
 from apps.recyclers.views import MaterialTypeViewSet, RecyclerPurchaseViewSet, RecyclingCertificateViewSet
 from apps.notifications.views import NotificationViewSet
@@ -34,6 +37,8 @@ router.register(r'attendance', AttendanceLogViewSet, basename='attendance')
 router.register(r'complaints', ComplaintViewSet, basename='complaint')
 router.register(r'rewards', RewardViewSet, basename='reward')
 router.register(r'reward-redemptions', RewardRedemptionViewSet, basename='reward-redemption')
+router.register(r'reward-settings', RewardSettingsViewSet, basename='reward-settings')
+router.register(r'reward-items', RewardItemManagementViewSet, basename='reward-item')
 router.register(r'payments', FeeCollectionViewSet, basename='payment')
 router.register(r'material-types', MaterialTypeViewSet, basename='materialtype')
 router.register(r'recycler-purchases', RecyclerPurchaseViewSet, basename='recyclerpurchase')

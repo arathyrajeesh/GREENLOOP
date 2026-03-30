@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Proof of Recycling Certificate</title>
+    <style>
+        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; margin: 40px; }
+        .header { text-align: center; border-bottom: 2px solid #2e7d32; padding-bottom: 20px; }
+        .header h1 { color: #2e7d32; margin: 0; }
+        .header p { margin: 5px 0; color: #666; }
+        .content { margin-top: 40px; line-height: 1.6; }
+        .cert-info { margin: 20px 0; padding: 20px; background: #f9f9f9; border-radius: 8px; }
+        .footer { margin-top: 60px; text-align: center; font-size: 0.9em; color: #888; border-top: 1px solid #eee; padding-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; color: #333; }
+        .status { color: #2e7d32; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Proof of Recycling</h1>
+        <p>GreenLoop Sustainability Service</p>
+        <p>Certificate #{{ certificate.certificate_number }}</p>
+    </div>
+
+    <div class="content">
+        <p>This document certifies that the following recyclable materials have been processed by our verified partner in compliance with EPR (Extended Producer Responsibility) norms.</p>
+        
+        <div class="cert-info">
+            <p><strong>Issued to (Recycler):</strong> {{ certificate.recycler.name }}</p>
+            <p><strong>Date of Issue:</strong> {{ certificate.issued_at|date:"F d, Y" }}</p>
+            <p><strong>Status:</strong> <span class="status">{{ certificate.get_status_display }}</span></p>
+        </div>
+
+        <h3>Purchase Summary</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Weight</th>
+                    <th>Source Ward</th>
+                    <th>Purchase Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in certificate.purchases.all %}
+                <tr>
+                    <td>{{ purchase.material_type.name }}</td>
+                    <td>{{ purchase.quantity }} {{ purchase.material_type.unit }}</td>
+                    <td>{{ purchase.source_ward.name|default:"N/A" }}</td>
+                    <td>{{ purchase.purchase_date|date:"Y-m-d" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4">No purchase records linked.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 40px;">
+            <p><strong>Total Processed Weight:</strong> {{ total_weight }} kg</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>This is a digitally generated certificate verified by the GreenLoop Administration.</p>
+        <p>&copy; 2026 GreenLoop Platform. All rights reserved.</p>
+    </div>
+</body>
+</html>

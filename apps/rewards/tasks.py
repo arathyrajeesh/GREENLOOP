@@ -1,7 +1,8 @@
 from celery import shared_task
 import logging
 from apps.pickups.models import Pickup
-from apps.rewards.models import Reward
+from .models import Reward, RewardSettings
+from .utils import calculate_streak
 
 logger = logging.getLogger(__name__)
 
@@ -16,31 +17,40 @@ def award_greenleaf_points(pickup_id):
         resident = pickup.resident
         
         # Check if a reward already exists for this pickup (idempotency)
-        # Using description to match for now, could add a generic relation or fk later
-        description = f"GreenLeaf Points for Pickup {pickup.id}"
-        if Reward.objects.filter(resident=resident, description=description).exists():
+        if Reward.objects.filter(pickup=pickup, transaction_type="EARNED").exists():
             logger.info(f"Points already awarded for pickup {pickup_id}")
             return
             
-        points = 10 # Default for clean waste
+        # Fetch reward settings
+        settings = RewardSettings.get_settings()
+        points = settings.clean_pickup_points
         
-        # Adjust points based on AI classification if available
+        # Check contamination flag if verification exists
         if hasattr(pickup, 'verification'):
-            if pickup.verification.ai_classification == 'contaminated':
-                points = 0
-            elif pickup.verification.ai_classification == 'mixed':
-                points = 5
+            if pickup.verification.contamination_flag:
+                points = settings.contaminated_pickup_points
                 
-        if points > 0:
-            Reward.objects.create(
-                resident=resident,
-                points=points,
-                transaction_type="EARNED",
-                description=description
-            )
-            logger.info(f"Awarded {points} points to {resident.email} for pickup {pickup_id}")
-        else:
-            logger.info(f"No points awarded for pickup {pickup_id} due to contamination")
+        Reward.objects.create(
+            resident=resident,
+            pickup=pickup,
+            points=points,
+            transaction_type="EARNED",
+            description=f"GreenLeaf Points for Pickup {pickup.id} ({'Clean' if points == 10 else 'Contaminated'})"
+        )
+        logger.info(f"Awarded {points} points to {resident.email} for pickup {pickup_id}")
+
+        # Check for streak milestone bonus
+        streak = calculate_streak(resident)
+        if streak >= settings.streak_threshold_weeks:
+            bonus_desc = f"{settings.streak_threshold_weeks}-week Perfect Segregation Streak Bonus!"
+            if not Reward.objects.filter(resident=resident, description=bonus_desc).exists():
+                Reward.objects.create(
+                    resident=resident,
+                    points=settings.streak_bonus_points,
+                    transaction_type="EARNED",
+                    description=bonus_desc
+                )
+                logger.info(f"Awarded {settings.streak_threshold_weeks}-week streak bonus to {resident.email}")
             
     except Pickup.DoesNotExist:
         logger.error(f"Pickup {pickup_id} not found when awarding points.")

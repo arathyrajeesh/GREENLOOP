@@ -1,22 +1,31 @@
 import pytest
 from apps.rewards.tasks import award_greenleaf_points
 from apps.rewards.models import Reward
-from tests.factories import PickupFactory
+from tests.factories import PickupFactory, PickupVerificationFactory
 
 @pytest.mark.django_db
-def test_award_greenleaf_points_success():
-    pickup = PickupFactory(status='completed', waste_type='dry')
-    # Use 10kg to ensure points are awarded
-    pickup.weight_kg = 10.5
-    pickup.save()
+def test_award_greenleaf_points_clean_waste():
+    from apps.pickups.models import PickupVerification
+    pickup = PickupFactory(status='completed')
+    PickupVerificationFactory(pickup=pickup, contamination_flag=False)
     
-    # Task is called in save() but we can call it manually to test logic
     award_greenleaf_points(pickup.id)
     
-    rewards = Reward.objects.filter(resident=pickup.resident)
+    rewards = Reward.objects.filter(pickup=pickup)
     assert rewards.exists()
-    # Logic awards a flat 10 points for clean waste as per current implementation
     assert rewards.first().points == 10
+
+@pytest.mark.django_db
+def test_award_greenleaf_points_contaminated_waste():
+    from apps.pickups.models import PickupVerification
+    pickup = PickupFactory(status='completed')
+    PickupVerificationFactory(pickup=pickup, contamination_flag=True)
+    
+    award_greenleaf_points(pickup.id)
+    
+    rewards = Reward.objects.filter(pickup=pickup)
+    assert rewards.exists()
+    assert rewards.first().points == 5
 
 @pytest.mark.django_db
 def test_award_greenleaf_points_idempotency():

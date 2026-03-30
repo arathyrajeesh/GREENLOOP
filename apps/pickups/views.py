@@ -132,6 +132,7 @@ class PickupViewSet(viewsets.ModelViewSet):
         weight_kg = request.data.get('weight_kg')
         override_notes = request.data.get('notes', '')
         is_gps_override = str(request.data.get('is_gps_override', 'False')).lower() == 'true'
+        contamination_flag = str(request.data.get('contamination_flag', 'False')).lower() == 'true'
         distance_meters = request.data.get('distance_meters')
         
         if is_gps_override and not override_notes:
@@ -157,6 +158,7 @@ class PickupViewSet(viewsets.ModelViewSet):
                 'requires_admin_review': requires_admin_review,
                 'distance_meters': float(distance_meters) if distance_meters else None,
                 'is_gps_override': is_gps_override,
+                'contamination_flag': contamination_flag,
             }
         )
         
