@@ -38,16 +38,23 @@ class PickupViewSet(viewsets.ModelViewSet):
         Example: /api/v1/pickups/availability/?ward_id=1&date=2026-03-31
         """
         ward_id = request.query_params.get('ward_id')
+        user = request.user
+        
+        # Fallback to user's ward if not provided in query params
+        if not ward_id and hasattr(user, 'ward') and user.ward:
+            ward_id = user.ward.id
+            
         date_str = request.query_params.get('date', timezone.now().date().isoformat())
         
         if not ward_id:
-            return Response({"error": "ward_id query param is required"}, status=status.HTTP_400_BAD_REQUEST)
+            # Return an empty list instead of a Map error to prevent frontend type-cast crashes
+            return Response([], status=status.HTTP_400_BAD_REQUEST)
             
         try:
             from datetime import datetime
             scheduled_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
-            return Response({"error": "Invalid date format, use YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response([], status=status.HTTP_400_BAD_REQUEST)
             
         # Get active slots from database
         active_slots = PickupSlot.objects.filter(is_active=True)
@@ -256,7 +263,11 @@ class PickupSlotViewSet(viewsets.ModelViewSet):
     """
     queryset = PickupSlot.objects.all()
     serializer_class = PickupSlotSerializer
-    permission_classes = [permissions.IsAdminUser]
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
 @extend_schema(tags=['HKS Worker'])
 class PickupVerificationViewSet(viewsets.GenericViewSet):
