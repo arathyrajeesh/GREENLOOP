@@ -86,11 +86,7 @@ class PickupViewSet(viewsets.ModelViewSet):
                 "is_available": remains > 0
             })
             
-        return Response({
-            "ward_id": int(ward_id),
-            "date": scheduled_date.isoformat(),
-            "slots": results
-        })
+        return Response(results)
 
     @extend_schema(tags=['Resident'])
     def perform_create(self, serializer):
