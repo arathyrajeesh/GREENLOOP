@@ -3,6 +3,11 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from apps.pickups.models import Pickup, PickupSlot
 
 class PickupSlotSerializer(serializers.ModelSerializer):
+    time_range = serializers.CharField(default="00:00 - 00:00")
+    label = serializers.CharField(default="Time Slot")
+    capacity = serializers.IntegerField(default=15)
+    is_active = serializers.BooleanField(default=True)
+
     class Meta:
         model = PickupSlot
         fields = ['id', 'time_range', 'label', 'capacity', 'is_active']

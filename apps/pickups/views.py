@@ -81,16 +81,23 @@ class PickupViewSet(viewsets.ModelViewSet):
         
         results = []
         for slot in active_slots:
+            # Fallback values to ensure no nulls reach Flutter
+            slot_id = str(slot.id) if slot.id else ""
+            time_slot = slot.time_range or "00:00 - 00:00"
+            label = slot.label or "Unknown Slot"
+            capacity = slot.capacity if slot.capacity is not None else 0
+            
             booked = counts_dict.get(slot.id, 0)
-            remains = slot.capacity - booked
+            remains = capacity - booked
+            
             results.append({
-                "id": str(slot.id),
-                "time_slot": slot.time_range,
-                "label": slot.label,
-                "capacity": slot.capacity,
+                "id": slot_id,
+                "time_slot": time_slot,
+                "label": label,
+                "capacity": capacity,
                 "booked_count": booked,
                 "remaining_capacity": max(0, remains),
-                "is_available": remains > 0
+                "is_available": remains > 0 and slot.is_active is True
             })
             
         return Response(results)

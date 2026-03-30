@@ -8,9 +8,9 @@ class PickupSlot(models.Model):
     Managed by ULB Admins.
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    time_range = models.CharField(max_length=50, help_text="e.g. '08:00 - 10:00'")
-    label = models.CharField(max_length=100, help_text="e.g. 'Morning Shift'")
-    capacity = models.PositiveIntegerField(default=15)
+    time_range = models.CharField(max_length=50, default="00:00 - 00:00", help_text="e.g. '08:00 - 10:00'")
+    label = models.CharField(max_length=100, default="Time Slot", help_text="e.g. 'Morning Shift'")
+    capacity = models.PositiveIntegerField(default=15, help_text="Max pickups allowed in this slot")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
