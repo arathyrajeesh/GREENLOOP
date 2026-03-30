@@ -7,7 +7,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'name', 'role', 'ward', 'is_active', 'created_at', 'points_balance']
-        read_only_fields = ['id', 'created_at', 'points_balance']
+        read_only_fields = ['id', 'role', 'is_active', 'created_at', 'points_balance']
 
     def get_points_balance(self, obj):
         if obj.role != 'RESIDENT':
