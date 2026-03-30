@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.db.models import Count
 from drf_spectacular.utils import extend_schema
 from django.utils import timezone
 from datetime import timedelta
@@ -28,6 +29,58 @@ class PickupViewSet(viewsets.ModelViewSet):
                 return queryset.filter(ward_id=ward_id)
             return queryset.all()
         return Pickup.objects.none()
+
+    @extend_schema(tags=['Resident'])
+    @action(detail=False, methods=['get'])
+    def availability(self, request):
+        """
+        Returns availability for each time slot for a given ward and date.
+        Example: /api/v1/pickups/availability/?ward_id=1&date=2026-03-31
+        """
+        ward_id = request.query_params.get('ward_id')
+        date_str = request.query_params.get('date', timezone.now().date().isoformat())
+        
+        if not ward_id:
+            return Response({"error": "ward_id query param is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        try:
+            from datetime import datetime
+            scheduled_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({"error": "Invalid date format, use YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        # Define static collection slots for all wards
+        all_slots = [
+            {"time_slot": "08:00 - 10:00", "label": "Morning (8-10 AM)", "capacity": 15},
+            {"time_slot": "10:00 - 12:00", "label": "Late Morning (10-12 PM)", "capacity": 15},
+            {"time_slot": "14:00 - 16:00", "label": "Afternoon (2-4 PM)", "capacity": 15},
+            {"time_slot": "16:00 - 18:00", "label": "Evening (4-6 PM)", "capacity": 15},
+        ]
+        
+        # Get existing pickup counts for this date/ward
+        pickup_counts = Pickup.objects.filter(
+            ward_id=ward_id, 
+            scheduled_date=scheduled_date
+        ).values('time_slot').annotate(count=Count('id'))
+        
+        counts_dict = {item['time_slot']: item['count'] for item in pickup_counts}
+        
+        results = []
+        for slot in all_slots:
+            booked = counts_dict.get(slot['time_slot'], 0)
+            remains = slot['capacity'] - booked
+            results.append({
+                **slot,
+                "booked_count": booked,
+                "remaining_capacity": max(0, remains),
+                "is_available": remains > 0
+            })
+            
+        return Response({
+            "ward_id": int(ward_id),
+            "date": scheduled_date.isoformat(),
+            "slots": results
+        })
 
     @extend_schema(tags=['Resident'])
     def perform_create(self, serializer):
