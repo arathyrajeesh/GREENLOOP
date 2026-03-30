@@ -22,7 +22,10 @@ from apps.rewards.views import (
 from apps.payments.views import FeeCollectionViewSet
 from apps.recyclers.views import MaterialTypeViewSet, RecyclerPurchaseViewSet, RecyclingCertificateViewSet
 from apps.notifications.views import NotificationViewSet
-from apps.accounts.views import OTPCodeViewSet, OTPRequestView, OTPVerifyView, PingView, MigrateView, LogoutView, WorkerLoginView
+from apps.accounts.views import (
+    OTPCodeViewSet, OTPRequestView, OTPVerifyView, 
+    PingView, MigrateView, LogoutView, WorkerLoginView, AdminLoginView
+)
 from apps.dashboard.views import SyncQueueViewSet
 from apps.reports.views import ReportCategoryViewSet, ReportViewSet, WardCollectionReportViewSet
 from apps.reports.nps_views import NPSSurveyStatusView, NPSSurveySubmitView, NPSSummaryView
