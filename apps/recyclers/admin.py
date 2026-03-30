@@ -3,12 +3,12 @@ from .models import MaterialType, RecyclerPurchase, RecyclingCertificate
 
 @admin.register(MaterialType)
 class MaterialTypeAdmin(admin.ModelAdmin):
-    list_display = ("name", "unit", "price_per_unit")
+    list_display = ("name", "unit", "base_price")
     search_fields = ("name",)
 
 @admin.register(RecyclerPurchase)
 class RecyclerPurchaseAdmin(admin.ModelAdmin):
-    list_display = ("recycler", "material_type", "quantity", "total_price", "purchase_date")
+    list_display = ("recycler", "material_type", "weight_kg", "amount_paid", "purchase_date")
     list_filter = ("purchase_date", "material_type", "recycler")
     search_fields = ("recycler__email", "recycler__name")
 

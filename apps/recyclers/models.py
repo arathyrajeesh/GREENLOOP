@@ -5,7 +5,7 @@ class MaterialType(models.Model):
     name = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=50, blank=True, help_text="e.g., Plastic, Paper, Metal")
     unit = models.CharField(max_length=20, default="kg")
-    price_per_unit = models.DecimalField(max_digits=10, decimal_places=2)
+    base_price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True)
 
     class Meta:
@@ -23,8 +23,8 @@ class RecyclerPurchase(models.Model):
         limit_choices_to={'role': 'RECYCLER'}
     )
     material_type = models.ForeignKey(MaterialType, on_delete=models.PROTECT)
-    quantity = models.DecimalField(max_digits=10, decimal_places=2)
-    total_price = models.DecimalField(max_digits=12, decimal_places=2)
+    weight_kg = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2)
     source_ward = models.ForeignKey(
         "wards.Ward",
         on_delete=models.SET_NULL,
@@ -43,7 +43,7 @@ class RecyclerPurchase(models.Model):
         ordering = ['-purchase_date']
 
     def __str__(self):
-        return f"{self.recycler.name} bought {self.quantity} {self.material_type.unit} of {self.material_type.name}"
+        return f"{self.recycler.name} bought {self.weight_kg} {self.material_type.unit} of {self.material_type.name}"
 
 class RecyclingCertificate(models.Model):
     resident = models.ForeignKey(

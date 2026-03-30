@@ -25,10 +25,10 @@ class RecyclerPurchaseViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         material = serializer.validated_data['material_type']
-        quantity = serializer.validated_data['quantity']
-        # Use price_per_unit from MaterialType if total_price isn't provided (already handled in models but good to be explicit)
-        total_price = material.price_per_unit * quantity
-        serializer.save(recycler=self.request.user, total_price=total_price)
+        weight_kg = serializer.validated_data['weight_kg']
+        # Use base_price from MaterialType if amount_paid isn't provided (already handled in models but good to be explicit)
+        amount_paid = material.base_price * weight_kg
+        serializer.save(recycler=self.request.user, amount_paid=amount_paid)
 
 class RecyclingCertificateViewSet(viewsets.ModelViewSet):
     serializer_class = RecyclingCertificateSerializer

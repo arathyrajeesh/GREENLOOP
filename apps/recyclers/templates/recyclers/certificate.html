@@ -47,7 +47,7 @@
                 {% for purchase in certificate.purchases.all %}
                 <tr>
                     <td>{{ purchase.material_type.name }}</td>
-                    <td>{{ purchase.quantity }} {{ purchase.material_type.unit }}</td>
+                    <td>{{ purchase.weight_kg }} {{ purchase.material_type.unit }}</td>
                     <td>{{ purchase.source_ward.name|default:"N/A" }}</td>
                     <td>{{ purchase.purchase_date|date:"Y-m-d" }}</td>
                 </tr>

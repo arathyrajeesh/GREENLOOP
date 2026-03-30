@@ -23,8 +23,8 @@ def generate_recycling_certificate_pdf(certificate_id):
     try:
         certificate = RecyclingCertificate.objects.get(id=certificate_id)
         
-        # Calculate total weight (assuming all units are normalized or just sum quantity)
-        total_weight = sum(p.quantity for p in certificate.purchases.all())
+        # Calculate total weight (assuming all units are normalized or just sum weight_kg)
+        total_weight = sum(p.weight_kg for p in certificate.purchases.all())
         
         # Context for template
         context = {

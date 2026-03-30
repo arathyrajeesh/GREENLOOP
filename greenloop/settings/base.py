@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "apps.reports",
     "apps.recyclers",
     "apps.dashboard",
+    "apps.contamination_review",
 ]
 
 MIDDLEWARE = [

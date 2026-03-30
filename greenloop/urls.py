@@ -24,7 +24,7 @@ from apps.recyclers.views import MaterialTypeViewSet, RecyclerPurchaseViewSet, R
 from apps.notifications.views import NotificationViewSet
 from apps.accounts.views import OTPCodeViewSet, OTPRequestView, OTPVerifyView, PingView, MigrateView, LogoutView, WorkerLoginView
 from apps.dashboard.views import SyncQueueViewSet
-from apps.reports.views import ReportCategoryViewSet, ReportViewSet
+from apps.reports.views import ReportCategoryViewSet, ReportViewSet, WardCollectionReportViewSet
 from apps.reports.nps_views import NPSSurveyStatusView, NPSSurveySubmitView, NPSSummaryView
 
 router = routers.DefaultRouter()
@@ -40,14 +40,18 @@ router.register(r'reward-redemptions', RewardRedemptionViewSet, basename='reward
 router.register(r'reward-settings', RewardSettingsViewSet, basename='reward-settings')
 router.register(r'reward-items', RewardItemManagementViewSet, basename='reward-item')
 router.register(r'payments', FeeCollectionViewSet, basename='payment')
-router.register(r'material-types', MaterialTypeViewSet, basename='materialtype')
-router.register(r'recycler-purchases', RecyclerPurchaseViewSet, basename='recyclerpurchase')
-router.register(r'recycling-certificates', RecyclingCertificateViewSet, basename='recycling-certificate')
+# Recycler Router for /api/v1/recycler/ prefix
+recycler_router = routers.DefaultRouter()
+recycler_router.register(r'materials', MaterialTypeViewSet, basename='materialtype')
+recycler_router.register(r'purchases', RecyclerPurchaseViewSet, basename='recyclerpurchase')
+recycler_router.register(r'certificates', RecyclingCertificateViewSet, basename='recycling-certificate')
+
 router.register(r'notifications', NotificationViewSet, basename='notification')
 router.register(r'otp-codes', OTPCodeViewSet, basename='otpcode')
 router.register(r'sync', SyncQueueViewSet, basename='sync')
 router.register(r'report-categories', ReportCategoryViewSet, basename='reportcategory')
 router.register(r'reports', ReportViewSet, basename='report')
+router.register(r'ward-reports', WardCollectionReportViewSet, basename='wardcollectionreport')
 
 from django.http import JsonResponse
 
@@ -63,7 +67,9 @@ urlpatterns = [
     path('api/v1/hks/routes/today/', TodayRouteView.as_view(), name='hks-route-today'),
     path('api/v1/hks/attendance/', WorkerAttendanceView.as_view(), name='hks-attendance'),
     path('api/v1/users/create-worker/', WorkerRecyclerCreateAPIView.as_view(), name='create-worker'),
+    path('api/v1/recycler/', include(recycler_router.urls)),
     path('api/v1/', include(router.urls)),
+    path('', include('apps.contamination_review.urls')),
 
     # NPS Survey
     path('api/v1/nps/status/', NPSSurveyStatusView.as_view(), name='nps-status'),

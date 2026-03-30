@@ -4,13 +4,13 @@ from .models import MaterialType, RecyclerPurchase, RecyclingCertificate
 class MaterialTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = MaterialType
-        fields = ['id', 'name', 'category', 'unit', 'price_per_unit', 'description']
+        fields = ['id', 'name', 'category', 'unit', 'base_price', 'description']
 
 class RecyclerPurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecyclerPurchase
-        fields = ['id', 'recycler', 'material_type', 'quantity', 'total_price', 'source_ward', 'purchase_date']
-        read_only_fields = ['id', 'recycler', 'total_price', 'purchase_date']
+        fields = ['id', 'recycler', 'material_type', 'weight_kg', 'amount_paid', 'source_ward', 'purchase_date']
+        read_only_fields = ['id', 'recycler', 'amount_paid', 'purchase_date']
 
 class RecyclingCertificateSerializer(serializers.ModelSerializer):
     purchase_ids = serializers.ListField(

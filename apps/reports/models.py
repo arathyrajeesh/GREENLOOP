@@ -87,3 +87,36 @@ class NPSSurvey(models.Model):
         elif self.score >= 7:
             return "passive"
         return "detractor"
+
+class WardCollectionReport(models.Model):
+    STATUS_CHOICES = (
+        ("PENDING", "Pending"),
+        ("COMPLETED", "Completed"),
+        ("FAILED", "Failed"),
+    )
+
+    ward = models.ForeignKey(
+        "wards.Ward",
+        on_delete=models.CASCADE,
+        related_name="collection_reports"
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    pdf_file = models.FileField(upload_to="reports/pdfs/", null=True, blank=True)
+    csv_file = models.FileField(upload_to="reports/csvs/", null=True, blank=True)
+    generated_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        limit_choices_to={'role': 'ADMIN'}
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = _("Ward Collection Report")
+        verbose_name_plural = _("Ward Collection Reports")
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Report for {self.ward.name} ({self.start_date} to {self.end_date})"

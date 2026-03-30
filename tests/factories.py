@@ -145,7 +145,7 @@ class MaterialTypeFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"Material {n}")
     category = "Plastic"
     unit = "kg"
-    price_per_unit = 15.0
+    base_price = 15.0
 
 class RecyclerPurchaseFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -153,8 +153,8 @@ class RecyclerPurchaseFactory(factory.django.DjangoModelFactory):
         
     recycler = factory.SubFactory(UserFactory, role='RECYCLER')
     material_type = factory.SubFactory(MaterialTypeFactory)
-    quantity = 100.0
-    total_price = 1500.0
+    weight_kg = 100.0
+    amount_paid = 1500.0
     source_ward = factory.SubFactory(WardFactory)
 
 class RecyclingCertificateFactory(factory.django.DjangoModelFactory):

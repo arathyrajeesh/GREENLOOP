@@ -19,7 +19,7 @@ class TestRecyclerPortal:
             "name": "HDPE Plastic",
             "category": "Plastic",
             "unit": "kg",
-            "price_per_unit": 20.0,
+            "base_price": 20.0,
             "description": "High-density polyethylene"
         }
         
@@ -30,20 +30,20 @@ class TestRecyclerPortal:
     def test_create_purchase(self, api_client):
         recycler = UserFactory(role='RECYCLER')
         ward = WardFactory()
-        material = MaterialTypeFactory(price_per_unit=15.0)
+        material = MaterialTypeFactory(base_price=15.0)
         api_client.force_authenticate(user=recycler)
         
         url = reverse('recyclerpurchase-list')
         data = {
             "material_type": material.id,
-            "quantity": 100.0,
+            "weight_kg": 100.0,
             "source_ward": ward.id
         }
         
         response = api_client.post(url, data)
         assert response.status_code == status.HTTP_201_CREATED
-        assert float(response.data['total_price']) == 1500.0 
-        assert RecyclerPurchase.objects.filter(recycler=recycler, quantity=100.0).exists()
+        assert float(response.data['amount_paid']) == 1500.0 
+        assert RecyclerPurchase.objects.filter(recycler=recycler, weight_kg=100.0).exists()
 
     def test_request_certificate(self, api_client, mocker):
         # Mock Celery task
@@ -64,6 +64,7 @@ class TestRecyclerPortal:
         
         # Use format='json' for nested data
         response = api_client.post(url, data, format='json')
+        print(response.data)
         assert response.status_code == status.HTTP_201_CREATED
         
         cert = RecyclingCertificate.objects.get(certificate_number=response.data['certificate_number'])

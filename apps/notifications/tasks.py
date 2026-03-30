@@ -175,3 +175,23 @@ def notify_recycler_certificate_verified(certificate_id):
         logger.error(f"Certificate {certificate_id} not found.")
     except Exception as e:
         logger.exception(f"Error notifying recycler for certificate {certificate_id}: {str(e)}")
+
+@shared_task
+def notify_admin_report_ready(report_id):
+    """
+    Notifies the admin user when their requested report has finished generating.
+    """
+    try:
+        from apps.reports.models import WardCollectionReport
+        report = WardCollectionReport.objects.get(id=report_id)
+        if report.generated_by:
+            title = f"Report {report.status.capitalize()}"
+            body = f"The Ward {report.ward.number} Waste Collection Report you requested is now ready."
+            if report.status == 'FAILED':
+                body = f"The Ward {report.ward.number} Waste Collection Report you requested failed to generate."
+                
+            send_fcm_push(report.generated_by, title, body, data={"report_id": str(report.id)})
+            Notification.objects.create(user=report.generated_by, title=title, message=body)
+            
+    except Exception as e:
+        logger.exception(f"Error notifying admin for report {report_id}: {str(e)}")
