@@ -20,3 +20,4 @@ Pillow
 requests
 qrcode[pil]
 weasyprint
+firebase-admin
