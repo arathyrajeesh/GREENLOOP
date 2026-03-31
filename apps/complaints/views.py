@@ -39,6 +39,7 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         complaint = serializer.save(reporter=self.request.user, status='submitted')
         notify_admin_new_complaint.delay(complaint.id)
 
+    @extend_schema(tags=['Admin'])
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
     def assign(self, request, pk=None):
         """Allows admins to assign a complaint to a worker."""
