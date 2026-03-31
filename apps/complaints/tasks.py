@@ -2,8 +2,7 @@ from celery import shared_task
 from django.utils import timezone
 from datetime import timedelta
 from .models import Complaint
-from apps.notifications.models import Notification
-from apps.notifications.tasks import send_fcm_push
+from apps.notifications.tasks import send_fcm_push_task
 from apps.users.models import User
 
 @shared_task
@@ -28,20 +27,18 @@ def check_pending_complaints():
         complaint.priority = 4 
         complaint.save()
         
-        # Notify admins (Database & Push)
+        # Notify admins via US-TASK-01
+        title = "Urgent: Complaint Escalated"
+        message = f"Complaint #{complaint.id} ({complaint.get_category_display()}) is now escalated due to inactivity."
+        
         for admin in admins:
-            Notification.objects.create(
-                user=admin,
-                title="Complaint Auto-Escalation",
-                message=f"Complaint {complaint.id} ({complaint.get_category_display()}) has been unresolved for 48+ hours and is now escalated."
+            # Task handles both database record and push
+            send_fcm_push_task.delay(
+                str(admin.id), 
+                title, 
+                message, 
+                extra_data={"complaint_id": str(complaint.id), "type": "ESCALATION"}
             )
-            # Push via US-TASK-01
-            if admin.fcm_token:
-                send_fcm_push(
-                    admin, 
-                    "Urgent: Complaint Escalated", 
-                    f"Complaint {complaint.id} ({complaint.category}) is now escalated."
-                )
         count += 1
         
     return f"Escalated {count} complaints."

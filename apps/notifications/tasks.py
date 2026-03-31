@@ -184,3 +184,18 @@ def notify_admin_report_ready(report_id):
             
     except Exception as e:
         logger.exception(f"Error notifying admin for report {report_id}: {str(e)}")
+@shared_task(bind=True, max_retries=3)
+def send_fcm_push_task(self, user_id, title, message, extra_data=None):
+    """
+    Sends a single push notification via US-TASK-01 with retries.
+    """
+    try:
+        user = User.objects.get(id=user_id)
+        success = send_push_notification(user, title, message, data=extra_data)
+        if success:
+             Notification.objects.create(user=user, title=title, message=message)
+             return True
+        return False
+    except Exception as e:
+        logger.error(f"FCM push failure for user {user_id}: {str(e)}")
+        raise self.retry(exc=e, countdown=60)
