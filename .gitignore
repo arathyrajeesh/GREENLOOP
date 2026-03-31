@@ -9,6 +9,8 @@ staticfiles/
 /pickups/
 media/
 .pytest_cache/
+.coverage
+htmlcov/
 .DS_Store
 *.log
 celerybeat-schedule

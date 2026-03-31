@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema
 
 @extend_schema(tags=['Admin'])
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.select_related('ward').all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
