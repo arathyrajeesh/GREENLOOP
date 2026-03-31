@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 from apps.wards.models import Ward
-from apps.wards.serializers import WardSerializer
+from apps.wards.serializers import WardSerializer, WardAssignWorkersSerializer
 from apps.users.serializers import UserSerializer
 from apps.users.models import User
 
@@ -26,6 +26,11 @@ class WardViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(workers, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        request=WardAssignWorkersSerializer,
+        responses={200: {"status": "success message"}},
+        description="Batch assign/unassign HKS workers to this ward."
+    )
     @action(detail=True, methods=['post'])
     def assign_workers(self, request, pk=None):
         """Batch assign/unassign HKS workers to this ward."""
