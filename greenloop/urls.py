@@ -26,7 +26,7 @@ from apps.accounts.views import (
     OTPCodeViewSet, OTPRequestView, OTPVerifyView, 
     PingView, MigrateView, LogoutView, WorkerLoginView, AdminLoginView
 )
-from apps.dashboard.views import SyncQueueViewSet
+from apps.dashboard.views import SyncQueueViewSet, DashboardStatsViewSet
 from apps.reports.views import ReportCategoryViewSet, ReportViewSet, WardCollectionReportViewSet
 from apps.reports.nps_views import NPSSurveyStatusView, NPSSurveySubmitView, NPSSummaryView
 
@@ -53,6 +53,7 @@ recycler_router.register(r'certificates', RecyclingCertificateViewSet, basename=
 router.register(r'notifications', NotificationViewSet, basename='notification')
 router.register(r'otp-codes', OTPCodeViewSet, basename='otpcode')
 router.register(r'sync', SyncQueueViewSet, basename='sync')
+router.register(r'dashboard/stats', DashboardStatsViewSet, basename='dashboard-stats')
 router.register(r'report-categories', ReportCategoryViewSet, basename='reportcategory')
 router.register(r'reports', ReportViewSet, basename='report')
 router.register(r'ward-reports', WardCollectionReportViewSet, basename='wardcollectionreport')

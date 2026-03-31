@@ -182,3 +182,70 @@ class SyncQueueViewSet(viewsets.ModelViewSet):
             "locations": locations
         })
 
+
+class DashboardStatsViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request):
+        range_val = request.query_params.get('range', '7d')
+        today = timezone.now().date()
+        
+        # 1. KPIs
+        pickups_today = Pickup.objects.filter(scheduled_date=today).count()
+        # active workers = with role HKS_WORKER and recently updated or in cache
+        active_workers_count = cache.get("active_workers_count", 0)
+        if not active_workers_count:
+             from apps.users.models import User
+             active_workers_count = User.objects.filter(role='HKS_WORKER', is_active=True).count()
+        
+        from apps.complaints.models import Complaint
+        pending_complaints = Complaint.objects.exclude(status__in=['resolved', 'closed']).count()
+        
+        total_waste = Pickup.objects.filter(status='completed').aggregate(models.Sum('weight_kg'))['weight_kg__sum'] or 0.0
+
+        # 2. Weekly Trend (last 7 days)
+        weekly_trend = []
+        for i in range(6, -1, -1):
+            date = today - timezone.timedelta(days=i)
+            count = Pickup.objects.filter(scheduled_date=date, status='completed').count()
+            weekly_trend.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "count": count
+            })
+
+        # 3. Ward Comparison
+        ward_comparison = []
+        wards = Ward.objects.all()
+        for ward in wards:
+            p_count = Pickup.objects.filter(ward=ward, status='completed').count()
+            c_count = Complaint.objects.filter(reporter__ward=ward).count()
+            w_weight = Pickup.objects.filter(ward=ward, status='completed').aggregate(models.Sum('weight_kg'))['weight_kg__sum'] or 0.0
+            
+            ward_comparison.append({
+                "ward_name": ward.name,
+                "pickups": p_count,
+                "complaints": c_count,
+                "waste_weight": float(w_weight)
+            })
+
+        # 4. NPS Stats (Simplified placeholder)
+        nps_stats = {
+            "score": 75.0,
+            "total_responses": 120,
+            "recent_feedback": [
+                {"rating": 5, "comment": "Excellent service!", "date": "2026-03-30"},
+                {"rating": 4, "comment": "Very punctual.", "date": "2026-03-29"},
+            ]
+        }
+
+        return Response({
+            "kpis": {
+                "pickups_today": pickups_today,
+                "active_workers": active_workers_count,
+                "pending_complaints": pending_complaints,
+                "total_waste_kg": float(total_waste),
+            },
+            "weekly_trend": weekly_trend,
+            "ward_comparison": ward_comparison,
+            "nps_stats": nps_stats
+        })
