@@ -176,3 +176,31 @@ CELERY_BEAT_SCHEDULE = {
 # Custom Email API Configuration (bypassing SMTP for Render)
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "re_ET3ds24t_5KgxR8P8MMLeNmDEFEDNCbck")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+
+# Firebase Cloud Messaging
+import firebase_admin
+from firebase_admin import credentials
+
+FIREBASE_CREDENTIALS_PATH = os.path.join(BASE_DIR, "firebase/serviceAccountKey.json")
+
+if not firebase_admin._apps:
+    try:
+        if os.path.exists(FIREBASE_CREDENTIALS_PATH):
+            # Check if file has content (not just a placeholder)
+            if os.path.getsize(FIREBASE_CREDENTIALS_PATH) > 0:
+                cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+                firebase_admin.initialize_app(cred)
+            else:
+                print(f"Warning: Firebase credentials file {FIREBASE_CREDENTIALS_PATH} is empty. Skipping initialization.")
+        else:
+             # Look for environment variable as fallback
+             cred_env = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+             if cred_env:
+                  import json
+                  cred_dict = json.loads(cred_env)
+                  cred = credentials.Certificate(cred_dict)
+                  firebase_admin.initialize_app(cred)
+             else:
+                  print(f"Warning: Firebase credentials file not found at {FIREBASE_CREDENTIALS_PATH}. Push notifications will fail in production.")
+    except Exception as e:
+        print(f"Error initializing Firebase Admin SDK: {str(e)}")

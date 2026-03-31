@@ -15,6 +15,7 @@ class AttendanceLogViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=['HKS Worker'])
 class WorkerAttendanceView(APIView):
+    serializer_class = AttendanceLogSerializer
     """
     Handles Check-In (POST), Check-Out (PATCH), and History (GET) for HKS Workers,
     featuring secure GPS boundary validation and PPE verification.

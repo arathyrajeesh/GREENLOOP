@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from apps.users.models import User
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,6 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'email', 'name', 'role', 'ward', 'is_active', 'created_at', 'points_balance']
         read_only_fields = ['id', 'role', 'is_active', 'created_at', 'points_balance']
 
+    @extend_schema_field(int)
     def get_points_balance(self, obj):
         if obj.role != 'RESIDENT':
             return None

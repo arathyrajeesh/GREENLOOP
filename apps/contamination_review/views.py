@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
@@ -9,6 +10,7 @@ from .models import Pickup
 from .serializers import PickupSerializer
 
 class ReviewQueueListView(APIView):
+    serializer_class = PickupSerializer
     """
     GET /api/review-queue/
     Returns all pickups where needs_review = True, ordered by created_at DESC.
@@ -20,6 +22,7 @@ class ReviewQueueListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PickupCreateView(APIView):
+    serializer_class = PickupSerializer
     """
     POST /api/pickups/
     Creates a new pickup processing AI predictions automatically.
@@ -43,6 +46,12 @@ class PickupConfirmAPIView(APIView):
         except Pickup.DoesNotExist:
             raise Http404
 
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(description="Pickup confirmed successfully."),
+            404: OpenApiResponse(description="Pickup not found.")
+        }
+    )
     @transaction.atomic
     def post(self, request, pk, *args, **kwargs):
         try:
@@ -71,6 +80,12 @@ class PickupOverrideCleanAPIView(APIView):
         except Pickup.DoesNotExist:
             raise Http404
 
+    @extend_schema(
+        responses={
+            200: PickupSerializer,
+            404: OpenApiResponse(description="Pickup not found.")
+        }
+    )
     @transaction.atomic
     def post(self, request, pk, *args, **kwargs):
         try:

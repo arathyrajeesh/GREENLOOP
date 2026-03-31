@@ -27,7 +27,10 @@ class NPSSurveyStatusView(APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
 
-    @extend_schema(tags=["NPS Survey"])
+    @extend_schema(
+        tags=["NPS Survey"],
+        responses={200: OpenApiResponse(description="Returns survey status (show/don't show)")}
+    )
     def get(self, request):
         user = request.user
         if user.role != "RESIDENT":
@@ -55,6 +58,7 @@ class NPSSurveyStatusView(APIView):
 
 
 class NPSSurveySubmitView(APIView):
+    serializer_class = NPSSurveySubmitSerializer
     """
     POST /api/v1/nps/submit/
     Accepts { score: 0-10, comment: "" }
