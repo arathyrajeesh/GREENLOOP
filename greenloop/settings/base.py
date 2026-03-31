@@ -159,6 +159,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True  # For development/Flutter Web
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "accept",
+    "x-no-auth",
+]
 AUTH_USER_MODEL = "users.User"
 # Celery
 CELERY_TASK_SERIALIZER = "json"
