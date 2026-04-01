@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Suchitwa Mission Compliance Report</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        body { font-family: 'Times New Roman', serif; color: #1a1a1a; line-height: 1.4; }
+        .header { text-align: center; border-bottom: 2px double #333; padding-bottom: 10px; margin-bottom: 30px; }
+        .gov-title { font-size: 1.4em; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .sub-title { font-size: 1.2em; font-style: italic; }
+        .meta-table { width: 100%; margin-bottom: 30px; }
+        .meta-table td { padding: 5px; border: none; }
+        .section-header { background-color: #e0e0e0; font-weight: bold; padding: 5px 10px; margin: 20px 0 10px; border-left: 5px solid #333; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.95em; }
+        th, td { border: 1px solid #1a1a1a; padding: 8px; text-align: center; }
+        th { background-color: #f5f5f5; font-weight: bold; }
+        .left-align { text-align: left; }
+        .highlight { font-weight: bold; color: #b71c1c; }
+        .footer { margin-top: 50px; }
+        .sig-box { width: 250px; border-top: 1px solid #333; text-align: center; padding-top: 5px; margin-top: 40px; }
+        .pull-right { float: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="gov-title">Government of Kerala - Suchitwa Mission</div>
+        <div class="sub-title">Solid Waste Management Regulatory Compliance Report (KSWMP)</div>
+    </div>
+
+    <table class="meta-table">
+        <tr>
+            <td width="20%"><strong>LBG/Ward:</strong></td>
+            <td>Ward {{ report.ward.number }} - {{ report.ward.name }}</td>
+            <td width="20%"><strong>Reporting Period:</strong></td>
+            <td>{{ report.start_date }} to {{ report.end_date }}</td>
+        </tr>
+        <tr>
+            <td><strong>ULB Name:</strong></td>
+            <td>GreenLoop Pilot Municipality</td>
+            <td><strong>Report ID:</strong></td>
+            <td>{{ report.id }}</td>
+        </tr>
+    </table>
+
+    <div class="section-header">1. Service Coverage & Household Participation</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Indicator</th>
+                <th>Target (Wards Total)</th>
+                <th>Actual (HKS Coverage)</th>
+                <th>Performance (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="left-align">Total Households Covered</td>
+                <td>{{ report.ward.total_households }}</td>
+                <td>{{ data.household_coverage.actual }}</td>
+                <td class="highlight">{{ data.household_coverage.percentage }}%</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="section-header">2. Waste Aggregation by Category (MRF Intake)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Waste Category</th>
+                <th>Total Collected (kg)</th>
+                <th>Segregation Accuracy (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for material in data.waste_weights %}
+            <tr>
+                <td class="left-align">{{ material.name }}</td>
+                <td>{{ material.weight|floatformat:2 }}</td>
+                <td>{{ material.accuracy }}%</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3">No records found for this period.</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="background:#eee;">
+                <td><strong>Total Non-Biodegradable</strong></td>
+                <td><strong>{{ data.total_weight|floatformat:2 }} kg</strong></td>
+                <td><strong>{{ data.overall_accuracy }}%</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="section-header">3. Financial & Human Resources</div>
+    <p>
+        <strong>Total User Fees Collected (INR):</strong> ₹ {{ data.financials.total_fees|floatformat:2 }}<br>
+        <strong>Average HKS Attendance Rate:</strong> <span class="highlight">{{ data.attendance.percentage }}%</span>
+    </p>
+
+    <div class="section-header">4. Compliance Observations</div>
+    <p style="font-size: 0.9em; min-height: 50px;">
+        {{ report.comments|default:"No significant irregularities observed in segregation or timing during this reporting cycle." }}
+    </p>
+
+    <div class="footer">
+        <p style="font-size: 0.8em; font-style: italic;">Note: This report is generated automatically by GreenLoop Platform and verified for KSWMP compliance.</p>
+        <div class="pull-right">
+            <div class="sig-box">ULB Administrator / Secretary</div>
+            <p style="font-size: 0.8em;">(Digital Signature/Stamp)</p>
+        </div>
+    </div>
+</body>
+</html>
