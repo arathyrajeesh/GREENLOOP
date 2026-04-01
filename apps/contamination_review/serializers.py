@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Pickup
 
-class PickupSerializer(serializers.ModelSerializer):
+class ContaminationPickupSerializer(serializers.ModelSerializer):
     """
     Serializer for the Contamination Review System's Pickup model.
     Handles image uploads, AI classifications, and read-only logic flags.

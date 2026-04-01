@@ -7,28 +7,30 @@ from django.db import transaction
 from django.http import Http404
 
 from .models import Pickup
-from .serializers import PickupSerializer
+from .serializers import ContaminationPickupSerializer
 
 class ReviewQueueListView(APIView):
-    serializer_class = PickupSerializer
+    serializer_class = ContaminationPickupSerializer
     """
     GET /api/review-queue/
     Returns all pickups where needs_review = True, ordered by created_at DESC.
     """
+    @extend_schema(tags=['Contamination Review'])
     def get(self, request, *args, **kwargs):
         pickups = Pickup.objects.filter(needs_review=True).order_by('-created_at')
-        serializer = PickupSerializer(pickups, many=True, context={'request': request})
+        serializer = ContaminationPickupSerializer(pickups, many=True, context={'request': request})
         # Empty list is handled natively by passing empty queryset
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PickupCreateView(APIView):
-    serializer_class = PickupSerializer
+    serializer_class = ContaminationPickupSerializer
     """
     POST /api/pickups/
     Creates a new pickup processing AI predictions automatically.
     """
+    @extend_schema(tags=['Contamination Review'])
     def post(self, request, *args, **kwargs):
-        serializer = PickupSerializer(data=request.data, context={'request': request})
+        serializer = ContaminationPickupSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -48,9 +50,10 @@ class PickupConfirmAPIView(APIView):
 
     @extend_schema(
         responses={
-            200: OpenApiResponse(description="Pickup confirmed successfully."),
+            200: ContaminationPickupSerializer,
             404: OpenApiResponse(description="Pickup not found.")
-        }
+        },
+        tags=['Contamination Review']
     )
     @transaction.atomic
     def post(self, request, pk, *args, **kwargs):
@@ -62,7 +65,7 @@ class PickupConfirmAPIView(APIView):
         pickup.needs_review = False
         pickup.save()
         
-        serializer = PickupSerializer(pickup, context={'request': request})
+        serializer = ContaminationPickupSerializer(pickup, context={'request': request})
         return Response(
             {"message": "Pickup confirmed successfully.", "data": serializer.data}, 
             status=status.HTTP_200_OK
@@ -82,9 +85,10 @@ class PickupOverrideCleanAPIView(APIView):
 
     @extend_schema(
         responses={
-            200: PickupSerializer,
+            200: ContaminationPickupSerializer,
             404: OpenApiResponse(description="Pickup not found.")
-        }
+        },
+        tags=['Contamination Review']
     )
     @transaction.atomic
     def post(self, request, pk, *args, **kwargs):
@@ -98,5 +102,5 @@ class PickupOverrideCleanAPIView(APIView):
         pickup.points_awarded += 5
         pickup.save()
         
-        serializer = PickupSerializer(pickup, context={'request': request})
+        serializer = ContaminationPickupSerializer(pickup, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)

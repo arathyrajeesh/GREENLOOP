@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from .models import SyncQueue
-from .serializers import SyncQueueSerializer
+from .serializers import SyncQueueSerializer, DashboardStatsSerializer
 from apps.routes.models import Route
 from apps.routes.serializers import RouteSerializer
 from apps.pickups.models import Pickup
@@ -185,7 +185,9 @@ class SyncQueueViewSet(viewsets.ModelViewSet):
 
 class DashboardStatsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DashboardStatsSerializer
 
+    @extend_schema(tags=['Admin', 'Dashboard'])
     def list(self, request):
         range_val = request.query_params.get('range', '7d')
         today = timezone.now().date()

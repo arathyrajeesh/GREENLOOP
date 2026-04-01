@@ -10,12 +10,21 @@ from .tasks import generate_recycling_certificate_pdf
 class MaterialTypeViewSet(viewsets.ModelViewSet):
     queryset = MaterialType.objects.all()
     serializer_class = MaterialTypeSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.IsAuthenticated()]
+        return [IsAdminUser()]
 
 @extend_schema(tags=['Recycler', 'Purchases'])
 class RecyclerPurchaseViewSet(viewsets.ModelViewSet):
     serializer_class = RecyclerPurchaseSerializer
-    permission_classes = [permissions.IsAuthenticated, IsRecyclerUser]
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsRecyclerUser()]
+        # Allow Admins to see the list/retrieve
+        return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
