@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from .models import MaterialType, RecyclerPurchase, RecyclingCertificate
 from .serializers import MaterialTypeSerializer, RecyclerPurchaseSerializer, RecyclingCertificateSerializer
 from apps.users.permissions import IsAdminUser, IsRecyclerUser
