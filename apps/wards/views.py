@@ -13,10 +13,49 @@ class WardViewSet(viewsets.ModelViewSet):
     serializer_class = WardSerializer
     
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy', 'assign_workers']:
-            # Allow IsAdminUser for management tasks
+        # Restrict most actions to admins. 
+        # But allow authenticated users (workers/residents) to 'retrieve' a specific ward 
+        # (e.g., they need to know details of their own ward).
+        if self.action in ['list', 'create', 'update', 'partial_update', 'destroy', 'assign_workers', 'stats']:
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Returns a non-GeoJSON summary of all wards for list views/tables."""
+        wards = self.get_queryset()
+        data = []
+        for ward in wards:
+            workers = ward.users.filter(role='HKS_WORKER')
+            data.append({
+                "id": ward.id,
+                "name": ward.name,
+                "number": ward.number,
+                "worker_count": workers.count(),
+                "resident_count": ward.users.filter(role='RESIDENT').count(),
+                "worker_names": [w.name for w in workers],
+                "point": {"lat": ward.location.y, "lng": ward.location.x}
+            })
+        return Response(data)
+
+    @action(detail=True, methods=['get'])
+    def stats(self, request, pk=None):
+        """Returns performance metrics for a specific ward."""
+        ward = self.get_object()
+        from apps.pickups.models import Pickup
+        from django.db.models import Sum
+        
+        pickups = Pickup.objects.filter(ward=ward)
+        completed = pickups.filter(status='completed').count()
+        total_weight = pickups.filter(status='completed').aggregate(Sum('weight_kg'))['weight_kg__sum'] or 0.0
+        
+        return Response({
+            "ward_name": ward.name,
+            "total_pickups": pickups.count(),
+            "completed_pickups": completed,
+            "total_waste_kg": float(total_weight),
+            "pending_complaints": ward.users.filter(role='RESIDENT', complaints__status='pending').count() # Simplified
+        })
 
     @action(detail=True, methods=['get'])
     def workers(self, request, pk=None):

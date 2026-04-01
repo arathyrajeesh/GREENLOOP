@@ -25,11 +25,19 @@ class JWTAuthMiddleware:
         self.app = app
 
     async def __call__(self, scope, receive, send):
-        # Extract token from query string
+        # 1. Search in query string (?token=...)
         query_string = scope.get("query_string", b"").decode()
         query_params = urllib.parse.parse_qs(query_string)
         token = query_params.get("token", [None])[0]
         
+        # 2. Fallback: Search in headers (Authorization: Bearer <token>)
+        if not token:
+            headers = dict(scope.get("headers", []))
+            # Header keys are in bytes and lowercase in Channels
+            auth_header = headers.get(b"authorization", b"").decode()
+            if auth_header.startswith("Bearer "):
+                token = auth_header.split(" ")[1]
+
         if token:
             scope["user"] = await get_user(token)
         else:
