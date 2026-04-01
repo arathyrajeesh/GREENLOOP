@@ -83,7 +83,7 @@ class RecyclingCertificateViewSet(viewsets.ModelViewSet):
         # Trigger background PDF generation task
         generate_recycling_certificate_pdf.delay(certificate.id)
 
-    @extend_schema(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsAdminUser], tags=['Admin', 'Certificates'])
+    @extend_schema(tags=['Admin', 'Certificates'])
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsAdminUser])
     def verify(self, request, pk=None):
         """
@@ -99,7 +99,7 @@ class RecyclingCertificateViewSet(viewsets.ModelViewSet):
         
         return Response({"status": "verified", "message": "Certificate verified and recycler notified."})
 
-    @extend_schema(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAdminUser], tags=['Admin', 'Certificates'])
+    @extend_schema(tags=['Admin', 'Certificates'])
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAdminUser])
     def admin_pending(self, request):
         """
