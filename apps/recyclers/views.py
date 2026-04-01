@@ -6,11 +6,13 @@ from .serializers import MaterialTypeSerializer, RecyclerPurchaseSerializer, Rec
 from apps.users.permissions import IsAdminUser, IsRecyclerUser
 from .tasks import generate_recycling_certificate_pdf
 
+@extend_schema(tags=['Recycler', 'Materials'])
 class MaterialTypeViewSet(viewsets.ModelViewSet):
     queryset = MaterialType.objects.all()
     serializer_class = MaterialTypeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+@extend_schema(tags=['Recycler', 'Purchases'])
 class RecyclerPurchaseViewSet(viewsets.ModelViewSet):
     serializer_class = RecyclerPurchaseSerializer
     permission_classes = [permissions.IsAuthenticated, IsRecyclerUser]
@@ -30,6 +32,7 @@ class RecyclerPurchaseViewSet(viewsets.ModelViewSet):
         amount_paid = material.base_price * weight_kg
         serializer.save(recycler=self.request.user, amount_paid=amount_paid)
 
+@extend_schema(tags=['Recycler', 'Certificates'])
 class RecyclingCertificateViewSet(viewsets.ModelViewSet):
     serializer_class = RecyclingCertificateSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -70,6 +73,7 @@ class RecyclingCertificateViewSet(viewsets.ModelViewSet):
         # Trigger background PDF generation task
         generate_recycling_certificate_pdf.delay(certificate.id)
 
+    @extend_schema(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsAdminUser], tags=['Admin', 'Certificates'])
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsAdminUser])
     def verify(self, request, pk=None):
         """
@@ -85,6 +89,7 @@ class RecyclingCertificateViewSet(viewsets.ModelViewSet):
         
         return Response({"status": "verified", "message": "Certificate verified and recycler notified."})
 
+    @extend_schema(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAdminUser], tags=['Admin', 'Certificates'])
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated, IsAdminUser])
     def admin_pending(self, request):
         """

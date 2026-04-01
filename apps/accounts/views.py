@@ -371,9 +371,9 @@ class WorkerLoginView(views.APIView):
         if not user.is_active:
             return response.Response({"error": "This account is inactive."}, status=status.HTTP_401_UNAUTHORIZED)
             
-        # Constraint: Allow HKS_WORKER and RECYCLER only
-        if user.role not in ['HKS_WORKER', 'RECYCLER']:
-             return response.Response({"error": "This login point is restricted to field-workers. Admins must use the Admin Login."}, status=status.HTTP_403_FORBIDDEN)
+        # Constraint: Allow HKS_WORKER only
+        if user.role != 'HKS_WORKER':
+             return response.Response({"error": "This login point is restricted to HKS workers. Recyclers must use the Recycler Login."}, status=status.HTTP_403_FORBIDDEN)
              
         # Generate tokens
         refresh = RefreshToken.for_user(user)
@@ -392,6 +392,7 @@ class WorkerLoginView(views.APIView):
                 "ward_id": user.ward_id
             }
         }, status=status.HTTP_200_OK)
+
 
 
 class AdminLoginView(views.APIView):
@@ -436,5 +437,51 @@ class AdminLoginView(views.APIView):
                 "name": user.name,
                 "role": user.role,
                 "token_type": "ADMIN_TOKEN"
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class RecyclerLoginView(views.APIView):
+    """
+    Dedicated login endpoint for recycling facilities.
+    """
+    serializer_class = WorkerLoginSerializer
+    permission_classes = [permissions.AllowAny]
+    
+    @extend_schema(
+        request=WorkerLoginSerializer,
+        responses={200: BaseResponseSerializer},
+        tags=['Recycler', 'Auth']
+    )
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        username = serializer.validated_data.get('username')
+        password = serializer.validated_data.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if not user or not user.is_active:
+            return response.Response({"error": "Invalid recycler credentials or account inactive."}, status=status.HTTP_401_UNAUTHORIZED)
+            
+        # Constraint: Allow RECYCLER only
+        if user.role != 'RECYCLER':
+             return response.Response({"error": "This login point is restricted to recycling facilities."}, status=status.HTTP_403_FORBIDDEN)
+             
+        # Generate tokens
+        refresh = RefreshToken.for_user(user)
+        refresh['role'] = user.role
+        
+        return response.Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "name": user.name,
+                "role": user.role,
+                "token_type": "RECYCLER_TOKEN"
             }
         }, status=status.HTTP_200_OK)

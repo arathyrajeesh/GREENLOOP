@@ -24,7 +24,7 @@ from apps.recyclers.views import MaterialTypeViewSet, RecyclerPurchaseViewSet, R
 from apps.notifications.views import NotificationViewSet
 from apps.accounts.views import (
     OTPCodeViewSet, OTPRequestView, OTPVerifyView, 
-    PingView, MigrateView, LogoutView, WorkerLoginView, AdminLoginView
+    PingView, MigrateView, LogoutView, WorkerLoginView, AdminLoginView, RecyclerLoginView
 )
 from apps.dashboard.views import SyncQueueViewSet, DashboardStatsViewSet
 from apps.reports.views import ReportCategoryViewSet, ReportViewSet, WardCollectionReportViewSet
@@ -92,6 +92,7 @@ urlpatterns = [
     path('api/v1/auth/otp/request/', OTPRequestView.as_view(), name='otp_request'),
     path('api/v1/auth/otp/verify/', OTPVerifyView.as_view(), name='otp_verify'),
     path('api/v1/auth/worker-login/', WorkerLoginView.as_view(), name='worker_login'),
+    path('api/v1/auth/recycler-login/', RecyclerLoginView.as_view(), name='recycler_login'),
     path('api/v1/auth/admin-login/', AdminLoginView.as_view(), name='admin_login'),
     path('api/v1/auth/logout/', LogoutView.as_view(), name='logout'),
     path('api/v1/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
