@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.template.loader import render_to_string
 from django.core.files.base import ContentFile
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Avg
 import logging
 import csv
 import io
@@ -62,7 +62,7 @@ def generate_ward_collection_report(report_id):
         
         nps_data = NPSSurvey.objects.filter(
             resident__ward=ward, submitted_at__date__range=[start, end]
-        ).aggregate(avg_score=models.Avg('score'), total_responses=Count('id'))
+        ).aggregate(avg_score=Avg('score'), total_responses=Count('id'))
         
         onboarding_count = User.objects.filter(
             ward=ward, role='RESIDENT', created_at__date__range=[start, end]
