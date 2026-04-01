@@ -95,11 +95,19 @@ class WardCollectionReport(models.Model):
         ("FAILED", "Failed"),
     )
 
+    REPORT_TYPE_CHOICES = (
+        ("WARD", "Ward Report"),
+        ("COMPLIANCE", "Suchitwa Mission Compliance"),
+        ("PERFORMANCE", "Worker Performance"),
+        ("FINANCIAL", "Fee Collection Summary"),
+    )
+
     ward = models.ForeignKey(
         "wards.Ward",
         on_delete=models.CASCADE,
         related_name="collection_reports"
     )
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPE_CHOICES, default="WARD")
     start_date = models.DateField()
     end_date = models.DateField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")

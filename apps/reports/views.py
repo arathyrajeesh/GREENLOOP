@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from apps.users.permissions import IsAdminUser
 from .models import ReportCategory, Report, WardCollectionReport
 from .serializers import ReportCategorySerializer, ReportSerializer, WardCollectionReportSerializer
-from .tasks import generate_ward_collection_report
+from .tasks import generate_ward_collection_report, generate_suchitwa_mission_report
 
 class ReportCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ReportCategory.objects.all()
@@ -30,5 +30,11 @@ class WardCollectionReportViewSet(viewsets.ModelViewSet):
         
     def perform_create(self, serializer):
         report = serializer.save(generated_by=self.request.user, status='PENDING')
-        generate_ward_collection_report.delay(report.id)
+        
+        # Trigger the specific task based on report_type
+        if report.report_type == 'COMPLIANCE':
+            generate_suchitwa_mission_report.delay(report.id)
+        else:
+            # Default to general ward report for now for WARD, PERFORMANCE, FINANCIAL
+            generate_ward_collection_report.delay(report.id)
 
