@@ -16,7 +16,7 @@ class WardViewSet(viewsets.ModelViewSet):
         # Restrict most actions to admins. 
         # But allow authenticated users (workers/residents) to 'retrieve' a specific ward 
         # (e.g., they need to know details of their own ward).
-        if self.action in ['list', 'create', 'update', 'partial_update', 'destroy', 'assign_workers', 'stats']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy', 'assign_workers', 'stats']:
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
 
