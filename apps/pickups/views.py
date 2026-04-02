@@ -47,14 +47,21 @@ class PickupViewSet(viewsets.ModelViewSet):
         date_str = request.query_params.get('date', timezone.now().date().isoformat())
         
         if not ward_id:
-            # Return an empty list instead of a Map error to prevent frontend type-cast crashes
-            return Response([], status=status.HTTP_400_BAD_REQUEST)
+            # Return Map with 'error' field instead of just an empty list. 
+            # Providing an empty 'data' list as well so the frontend doesn't crash on list-expectations.
+            return Response({
+                "error": "Ward ID is missing. Please ensure your profile has a ward assigned.", 
+                "slots": []
+            }, status=status.HTTP_400_BAD_REQUEST)
             
         try:
             from datetime import datetime
             scheduled_date = datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
-            return Response([], status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "error": f"Invalid date format: {date_str}. Expected YYYY-MM-DD", 
+                "slots": []
+            }, status=status.HTTP_400_BAD_REQUEST)
             
         # Get active slots from database
         active_slots = PickupSlot.objects.filter(is_active=True)
@@ -81,20 +88,22 @@ class PickupViewSet(viewsets.ModelViewSet):
         
         results = []
         for slot in active_slots:
-            # Fallback values to ensure no nulls reach Flutter
+            # Fallback values to ensure NO nulls ever reach Flutter
+            # Crucially aligning 'time_range' and 'time_slot' to avoid type-cast errors on missing keys
             slot_id = str(slot.id) if slot.id else ""
-            time_slot = slot.time_range or "00:00 - 00:00"
-            label = slot.label or "Unknown Slot"
-            capacity = slot.capacity if slot.capacity is not None else 0
+            tr = str(slot.time_range or "00:00 - 00:00")
+            lbl = str(slot.label or "Unknown Slot")
+            cap = int(slot.capacity if slot.capacity is not None else 0)
             
-            booked = counts_dict.get(slot.id, 0)
-            remains = capacity - booked
+            booked = int(counts_dict.get(slot.id, 0))
+            remains = cap - booked
             
             results.append({
                 "id": slot_id,
-                "time_slot": time_slot,
-                "label": label,
-                "capacity": capacity,
+                "time_slot": tr,     # Legacy key
+                "time_range": tr,    # Model/Serializer-aligned key
+                "label": lbl,
+                "capacity": cap,
                 "booked_count": booked,
                 "remaining_capacity": max(0, remains),
                 "is_available": remains > 0 and slot.is_active is True

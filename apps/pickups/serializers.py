@@ -3,10 +3,11 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from apps.pickups.models import Pickup, PickupSlot
 
 class PickupSlotSerializer(serializers.ModelSerializer):
-    time_range = serializers.CharField(default="00:00 - 00:00")
-    label = serializers.CharField(default="Time Slot")
-    capacity = serializers.IntegerField(default=15)
-    is_active = serializers.BooleanField(default=True)
+    # Enforce non-null strings and ints to prevent Flutter "Null is not a subtype of String" crashes
+    time_range = serializers.CharField(default="00:00 - 00:00", allow_null=False)
+    label = serializers.CharField(default="Time Slot", allow_null=False)
+    capacity = serializers.IntegerField(default=15, allow_null=False)
+    is_active = serializers.BooleanField(default=True, allow_null=False)
 
     class Meta:
         model = PickupSlot
@@ -14,6 +15,8 @@ class PickupSlotSerializer(serializers.ModelSerializer):
 
 class PickupSerializer(GeoFeatureModelSerializer):
     time_slot_details = PickupSlotSerializer(source='time_slot_ref', read_only=True)
+    # Ensure time_slot is never null in output to prevent Flutter crashes
+    time_slot = serializers.CharField(default="", allow_null=False, required=False)
     
     class Meta:
         model = Pickup
