@@ -17,6 +17,15 @@ class PickupSerializer(GeoFeatureModelSerializer):
     time_slot_details = PickupSlotSerializer(source='time_slot_ref', read_only=True)
     # Ensure time_slot is never null in output to prevent Flutter crashes
     time_slot = serializers.CharField(default="", allow_null=False, required=False)
+
+    def validate_waste_type(self, value):
+        """
+        Normalize waste_type to lowercase before saving.
+        This fixes the issue where some frontends send "DRY" instead of "dry".
+        """
+        if value:
+            return value.lower()
+        return value
     
     class Meta:
         model = Pickup
