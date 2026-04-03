@@ -20,6 +20,23 @@ class TestPickupViewSet:
         pickup = Pickup.objects.first()
         assert pickup.resident == resident_user
         assert pickup.ward == resident_user.ward
+        assert pickup.status == 'pending'
+        assert response.data['booking_type'] == "Scheduled Slot"
+
+    def test_create_instant_pickup_resident(self, authenticated_client, resident_user, ward):
+        url = reverse('pickup-list')
+        data = {
+            "waste_type": "dry",
+            "is_instant": True,
+            "location": {"type": "Point", "coordinates": [76.947, 8.525]}
+        }
+        response = authenticated_client.post(url, data, format='json')
+        assert response.status_code == status.HTTP_201_CREATED
+        pickup = Pickup.objects.get(id=response.data['id'])
+        assert pickup.is_instant is True
+        # Verify it was automatically accepted as per our new model logic
+        assert pickup.status == 'accepted'
+        assert response.data['booking_type'] == "Instant Booking"
 
     def test_cancel_pickup_too_late(self, authenticated_client, resident_user):
         from django.utils import timezone

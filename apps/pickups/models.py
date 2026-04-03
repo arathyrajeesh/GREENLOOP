@@ -94,6 +94,10 @@ class Pickup(models.Model):
                 old_status = Pickup.objects.get(id=self.id).status
             except Pickup.DoesNotExist:
                 pass
+        
+        # Automatically mark instant bookings as 'accepted' (meaning dispatched)
+        if is_new and self.is_instant and self.status == 'pending':
+            self.status = 'accepted'
 
         if self.status == 'completed' and not self.completed_at:
             self.completed_at = timezone.now()
@@ -117,7 +121,8 @@ class Pickup(models.Model):
         ]
 
     def __str__(self):
-        return f"Pickup {self.id} ({self.status})"
+        prefix = "Instant " if self.is_instant else ""
+        return f"{prefix}Pickup {self.id} ({self.status})"
 
 class PickupVerification(models.Model):
     pickup = models.OneToOneField(Pickup, on_delete=models.CASCADE, related_name="verification")
