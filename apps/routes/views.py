@@ -18,23 +18,19 @@ class RouteViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def ward_live(self, request):
         """
-        Retrieves the active collection routes in the resident's ward for today.
-        Allows residents to see where the truck is for 'Instant Pickup' planning.
+        Retrieves the active collection routes CITY-WIDE for today. 
+        Allowing residents to see all cleanup vehicles moving through the city.
         """
-        user = request.user
-        if not hasattr(user, 'ward') or not user.ward:
-             return Response({
-                 "error": "No ward assigned to your profile. Please update your profile."
-             }, status=status.HTTP_400_BAD_REQUEST)
-
         today = timezone.now().date()
-        routes = Route.objects.filter(ward=user.ward, route_date=today)
+        # Show ALL active trucks for today across the entire city
+        routes = Route.objects.filter(route_date=today).select_related('ward', 'hks_worker')
         
         # Serialize with geo-features
         serializer = self.get_serializer(routes, many=True)
         return Response({
-            "ward_name": user.ward.name,
+            "city_wide": True,
             "date": today.isoformat(),
+            "total_active_trucks": routes.count(),
             "routes": serializer.data
         })
 
