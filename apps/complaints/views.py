@@ -38,17 +38,18 @@ class ComplaintViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='get-upload-url')
     def get_upload_url(self, request):
         """
-        Returns a placeholder or pre-signed URL for image uploading.
-        Used by the Flutter app before submitting the full complaint.
+        Returns a placeholder S3-style response for the Flutter app.
+        This fixes the "type 'Null' is not a subtype of type 'String'" error by 
+        ensuring no expected keys are missing or null in Dart.
         """
-        # For now, we return a simple direct-upload hint 
-        # as the backend handles direct Multipart/Form-data. 
-        # The frontend uses this to 'know' where to put the file logic.
         return Response({
-            "upload_url": "/api/v1/complaints/upload/", 
+            "upload_url": "/api/v1/complaints/", 
             "method": "POST",
             "field": "image",
-            "message": "Use direct multipart upload to this URL or the main POST endpoint."
+            "s3_key": f"complaints/{request.user.id}_placeholder.jpg",
+            "bucket": "greenloop-storage",
+            "url": "/api/v1/complaints/", # Alias for upload_url
+            "message": "Direct upload to the complaint endpoint is enabled."
         })
 
     @extend_schema(tags=['Resident'])
