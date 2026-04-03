@@ -37,6 +37,7 @@ class PickupCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PickupConfirmAPIView(APIView):
+    serializer_class = ContaminationPickupSerializer
     """
     POST /api/pickups/{id}/confirm/
     Accepts the AI result without modifying points.
@@ -72,6 +73,7 @@ class PickupConfirmAPIView(APIView):
         )
 
 class PickupOverrideCleanAPIView(APIView):
+    serializer_class = ContaminationPickupSerializer
     """
     POST /api/pickups/{id}/override-clean/
     Overrides AI prediction marking it 'clean'.
