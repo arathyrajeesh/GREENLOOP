@@ -35,6 +35,23 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         return queryset.order_by('-priority', 'created_at')
 
     @extend_schema(tags=['Resident'])
+    @action(detail=False, methods=['get'], url_path='get-upload-url')
+    def get_upload_url(self, request):
+        """
+        Returns a placeholder or pre-signed URL for image uploading.
+        Used by the Flutter app before submitting the full complaint.
+        """
+        # For now, we return a simple direct-upload hint 
+        # as the backend handles direct Multipart/Form-data. 
+        # The frontend uses this to 'know' where to put the file logic.
+        return Response({
+            "upload_url": "/api/v1/complaints/upload/", 
+            "method": "POST",
+            "field": "image",
+            "message": "Use direct multipart upload to this URL or the main POST endpoint."
+        })
+
+    @extend_schema(tags=['Resident'])
     def perform_create(self, serializer):
         complaint = serializer.save(reporter=self.request.user, status='submitted')
         notify_admin_new_complaint.delay(complaint.id)
