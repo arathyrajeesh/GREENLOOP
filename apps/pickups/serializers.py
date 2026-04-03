@@ -33,7 +33,7 @@ class PickupSerializer(GeoFeatureModelSerializer):
         id_field = "id"
         fields = [
             'id', 'resident', 'ward', 'waste_type', 
-            'status', 'scheduled_date', 'time_slot_ref', 'time_slot', 'time_slot_details',
+            'status', 'scheduled_date', 'is_instant', 'time_slot_ref', 'time_slot', 'time_slot_details',
             'qr_code', 'completed_at', 'created_at'
         ]
         read_only_fields = ['resident', 'status', 'qr_code', 'completed_at', 'created_at']

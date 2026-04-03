@@ -1,4 +1,5 @@
 from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils import timezone
@@ -12,6 +13,30 @@ class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    @extend_schema(tags=['Resident'])
+    @action(detail=False, methods=['get'])
+    def ward_live(self, request):
+        """
+        Retrieves the active collection routes in the resident's ward for today.
+        Allows residents to see where the truck is for 'Instant Pickup' planning.
+        """
+        user = request.user
+        if not hasattr(user, 'ward') or not user.ward:
+             return Response({
+                 "error": "No ward assigned to your profile. Please update your profile."
+             }, status=status.HTTP_400_BAD_REQUEST)
+
+        today = timezone.now().date()
+        routes = Route.objects.filter(ward=user.ward, route_date=today)
+        
+        # Serialize with geo-features
+        serializer = self.get_serializer(routes, many=True)
+        return Response({
+            "ward_name": user.ward.name,
+            "date": today.isoformat(),
+            "routes": serializer.data
+        })
 
 class TodayRouteView(APIView):
     """
@@ -34,7 +59,7 @@ class TodayRouteView(APIView):
             ward=route.ward, 
             scheduled_date=today,
             status__in=['pending', 'accepted']
-        ).order_by('time_slot')
+        ).order_by('-is_instant', 'time_slot')
         
         return Response({
             "route": RouteSerializer(route).data,

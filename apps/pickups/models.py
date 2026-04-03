@@ -52,6 +52,7 @@ class Pickup(models.Model):
         help_text="Reference to the master slot configuration"
     )
     time_slot = models.CharField(max_length=50, blank=True, null=True, help_text="e.g., '10:00-12:00' (Legacy or Custom)")
+    is_instant = models.BooleanField(default=False, help_text="If true, this pickup was requested on-demand outside of a slot.")
     notes = models.TextField(blank=True, help_text="Mandatory note if GPS override was used")
 
     @property
