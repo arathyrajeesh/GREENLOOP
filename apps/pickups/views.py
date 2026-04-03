@@ -17,10 +17,10 @@ class PickupViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         if getattr(user, 'role', '') == 'RESIDENT':
-            return Pickup.objects.select_related('resident', 'ward').filter(resident=user)
+            return Pickup.objects.select_related('resident', 'ward').filter(resident=user).order_by('-created_at')[:20]
         elif getattr(user, 'role', '') == 'HKS_WORKER':
             if user.ward:
-                return Pickup.objects.select_related('resident', 'ward').filter(ward=user.ward)
+                return Pickup.objects.select_related('resident', 'ward').filter(ward=user.ward).order_by('-created_at')[:20]
             return Pickup.objects.none()
         elif getattr(user, 'role', '') == 'ADMIN':
             ward_id = self.request.query_params.get('ward_id')
