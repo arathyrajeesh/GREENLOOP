@@ -55,7 +55,12 @@ class ComplaintViewSet(viewsets.ModelViewSet):
     @extend_schema(tags=['Resident'])
     def perform_create(self, serializer):
         complaint = serializer.save(reporter=self.request.user, status='submitted')
-        notify_admin_new_complaint.delay(complaint.id)
+        try:
+            notify_admin_new_complaint.delay(complaint.id)
+        except Exception as e:
+            # Prevent 500 error if Redis/Celery is down. 
+            # The complaint is still saved successfully.
+            print(f"ALARM: Notification failed to queue: {e}")
 
     @extend_schema(tags=['Admin'])
     @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser])
