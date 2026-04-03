@@ -65,31 +65,6 @@ class WardViewSet(viewsets.ModelViewSet):
         serializer = UserSerializer(workers, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['get'])
-    def schedule(self, request, pk=None):
-        """
-        Returns the recurring weekly schedule for waste collection in this ward.
-        Fixes 404 for /api/v1/wards/{id}/schedule/
-        """
-        ward = self.get_object()
-        # Default schedule if not specialized in database
-        # This aligns with the 'Dry', 'Wet', 'E-Waste', 'Biomedical' icons in the app.
-        weekly_schedule = [
-            {"day": "Monday", "type": "dry", "label": "Dry Waste"},
-            {"day": "Tuesday", "type": "wet", "label": "Wet Waste"},
-            {"day": "Wednesday", "type": "dry", "label": "Dry Waste"},
-            {"day": "Thursday", "type": "wet", "label": "Wet Waste"},
-            {"day": "Friday", "type": "hazardous", "label": "Hazardous / E-Waste"},
-            {"day": "Saturday", "type": "biomedical", "label": "Biomedical Waste"},
-            {"day": "Sunday", "type": "biomedical", "label": "Biomedical Waste"},
-        ]
-        
-        return Response({
-            "ward_name": ward.name,
-            "ward_number": ward.number,
-            "schedule": weekly_schedule
-        })
-
     @extend_schema(
         request=WardAssignWorkersSerializer,
         responses={200: {"status": "success message"}},
