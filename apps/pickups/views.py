@@ -37,6 +37,22 @@ class PickupViewSet(viewsets.ModelViewSet):
         Returns availability for each time slot for a given ward and date.
         Example: /api/v1/pickups/availability/?ward_id=1&date=2026-03-31
         """
+        return self._do_availability(request)
+
+    @extend_schema(tags=['Resident'])
+    @action(detail=False, methods=['get'])
+    def schedule(self, request):
+        """
+        ALIAS for availability. 
+        Fixes 404 errors on the 'Waste Collection Schedule' screen.
+        """
+        return self._do_availability(request)
+
+    def _do_availability(self, request):
+        """
+        Returns availability for each time slot for a given ward and date.
+        Example: /api/v1/pickups/availability/?ward_id=1&date=2026-03-31
+        """
         ward_id = request.query_params.get('ward_id')
         user = request.user
         
