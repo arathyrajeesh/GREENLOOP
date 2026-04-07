@@ -259,7 +259,12 @@ class PickupViewSet(viewsets.ModelViewSet):
         from apps.pickups.tasks import flag_pickup_for_review
         
         if requires_admin_review:
-            flag_pickup_for_review.delay(pickup.id)
+            try:
+                flag_pickup_for_review.delay(pickup.id)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Failed to queue review task for pickup {pickup.id}: {str(e)}")
             
         # Check weight threshold for payment requirement
         payment_required = False

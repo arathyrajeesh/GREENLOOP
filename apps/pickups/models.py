@@ -1,4 +1,5 @@
 import uuid
+import logging
 from django.contrib.gis.db import models
 from django.utils import timezone
 
@@ -108,12 +109,17 @@ class Pickup(models.Model):
         from apps.notifications.tasks import notify_resident_pickup_assigned, notify_resident_pickup_complete
         from apps.rewards.tasks import award_greenleaf_points
         
-        if self.status == 'accepted' and old_status != 'accepted':
-            notify_resident_pickup_assigned.delay(self.id)
-            
-        if self.status == 'completed' and old_status != 'completed':
-            notify_resident_pickup_complete.delay(self.id)
-            award_greenleaf_points.delay(self.id)
+        logger = logging.getLogger(__name__)
+
+        try:
+            if self.status == 'accepted' and old_status != 'accepted':
+                notify_resident_pickup_assigned.delay(self.id)
+                
+            if self.status == 'completed' and old_status != 'completed':
+                notify_resident_pickup_complete.delay(self.id)
+                award_greenleaf_points.delay(self.id)
+        except Exception as e:
+            logger.error(f"Failed to queue background tasks for pickup {self.id}: {str(e)}")
 
     class Meta:
         indexes = [
