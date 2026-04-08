@@ -3,12 +3,12 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
-from tests.factories import ResidentFactory, AdminFactory, WardFactory
+from tests.factories import ResidentFactory, AdminFactory, WardFactory, WorkerFactory
 from apps.reports.models import NPSSurvey
 
 
 @pytest.fixture
-def api_client():
+def api_client() -> APIClient:
     return APIClient()
 
 
@@ -107,7 +107,6 @@ def test_nps_submit_updates_existing(api_client):
 @pytest.mark.django_db
 def test_nps_submit_forbidden_for_worker(api_client):
     """HKS Workers cannot submit NPS surveys."""
-    from tests.factories import WorkerFactory
     worker = WorkerFactory()
     api_client.force_authenticate(user=worker)
     response = api_client.post(reverse("nps-submit"), {"score": 7})
