@@ -94,6 +94,13 @@ Manage collection zones and the master ledger of pickups.
   - `GET /api/v1/pickup-slots/`
   - Manage timing and capacity for resident bookings.
 
+- **Route Management**
+  - `GET /api/v1/routes/`: List all historical and upcoming routes.
+  - `POST /api/v1/routes/`: Assign a new route to a worker for a specific date.
+    - Body: `{"hks_worker": "worker-uuid", "ward": "ward-uuid", "route_date": "2024-04-16", "planned_path": {...}}`
+  - `GET /api/v1/routes/<id>/`: View route details and actual GPS track.
+  - `PATCH /api/v1/routes/<id>/`: Update planned path or manually close a route.
+
 ---
 
 ## 🔍 5. Contamination Review Queue

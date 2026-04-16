@@ -9,10 +9,23 @@ from apps.pickups.models import Pickup
 from apps.pickups.serializers import PickupSerializer
 from drf_spectacular.utils import extend_schema
 
+@extend_schema(tags=['Admin'])
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
+    queryset = Route.objects.all().select_related('ward', 'hks_worker')
     serializer_class = RouteSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            from apps.users.permissions import IsAdminUser
+            return [IsAdminUser()]
+        return [permissions.IsAuthenticated()]
+
+    @extend_schema(request=RouteSerializer, responses={201: RouteSerializer})
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a new collection route for a worker.
+        """
+        return super().create(request, *args, **kwargs)
 
     @extend_schema(tags=['Resident'])
     @action(detail=False, methods=['get'])
