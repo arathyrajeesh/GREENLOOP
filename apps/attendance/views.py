@@ -65,6 +65,13 @@ class WorkerAttendanceView(APIView):
 
         # Parse Location
         loc_data = request.data.get('check_in_location')
+        if isinstance(loc_data, str):
+            import json
+            try:
+                loc_data = json.loads(loc_data)
+            except json.JSONDecodeError:
+                return Response({"error": "check_in_location must be valid JSON"}, status=status.HTTP_400_BAD_REQUEST)
+
         if not loc_data or 'coordinates' not in loc_data:
             return Response({"error": "check_in_location (GeoJSON Point format) is required"}, status=status.HTTP_400_BAD_REQUEST)
             
