@@ -15,16 +15,22 @@ class PickupSlotSerializer(serializers.ModelSerializer):
 
 class PickupSerializer(GeoFeatureModelSerializer):
     time_slot_details = PickupSlotSerializer(source='time_slot_ref', read_only=True)
+    # Use CharField to allow normalization before choice validation
+    waste_type = serializers.CharField()
     # Ensure time_slot is never null in output to prevent Flutter crashes
     time_slot = serializers.CharField(default="", allow_null=False, required=False)
 
     def validate_waste_type(self, value):
         """
-        Normalize waste_type to lowercase before saving.
-        This fixes the issue where some frontends send "DRY" instead of "dry".
+        Normalize waste_type to lowercase and validate against model choices.
+        This fixes the issue where frontends send "WET" instead of "wet".
         """
         if value:
-            return value.lower()
+            normalized_value = value.lower()
+            valid_choices = [choice[0] for choice in Pickup.WASTE_CHOICES]
+            if normalized_value not in valid_choices:
+                raise serializers.ValidationError(f"\"{value}\" is not a valid choice.")
+            return normalized_value
         return value
     
     booking_type = serializers.SerializerMethodField()
